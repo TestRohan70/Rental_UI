@@ -58,20 +58,7 @@
 
     <!-- Brand header -->
     <header class="brand-header">
-      <div class="brand-logo" aria-hidden="true">
-        <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
-          <circle cx="32" cy="32" r="30" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-          <path d="M32 8 C32 8 18 14 18 22 C18 30 24 34 32 38 C40 34 46 30 46 22 C46 14 32 8 32 8Z" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" fill="none"/>
-          <path d="M22 42 C22 42 26 48 32 52 C38 48 42 42 42 42" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none"/>
-          <line x1="32" y1="22" x2="32" y2="34" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"/>
-          <line x1="26" y1="28" x2="38" y2="28" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"/>
-          <circle cx="32" cy="28" r="3" fill="rgba(255,255,255,0.6)"/>
-        </svg>
-      </div>
-      <h1 class="brand-title">
-        <span class="brand-pro">Pro</span><span class="brand-society">Society</span>
-      </h1>
-      <p class="brand-tagline">Professional Society Management System</p>
+      <app-brand-logo size="md" [showTagline]="true" [interactive]="true" />
     </header>
 
     <!-- Welcome -->

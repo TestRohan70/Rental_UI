@@ -1,33 +1,16 @@
 @if (loader.isVisible()) {
   <div class="loader-overlay" role="alert" aria-live="assertive" aria-busy="true">
     <div class="loader-card">
+      <app-brand-logo size="lg" [animate]="true" [interactive]="false" />
 
-      <div class="loader-rings" aria-hidden="true">
-        <span class="ring ring-glow"></span>
-        <span class="ring ring-outer"></span>
-        <span class="ring ring-middle"></span>
-        <span class="ring ring-inner"></span>
-
-        <div class="loader-icon-bubble">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 21h18"/>
-            <path d="M5 21V7l7-4 7 4v14"/>
-            <path d="M9 21v-6h6v6"/>
-            <path d="M9 9h.01"/>
-            <path d="M15 9h.01"/>
-            <path d="M9 13h.01"/>
-            <path d="M15 13h.01"/>
-          </svg>
-        </div>
-      </div>
-
+      <p class="loader-brand">PREMISUS <span class="loader-brand-360">360</span></p>
       <h2 class="loader-title">{{ loader.message() }}</h2>
       <p class="loader-subtitle">{{ loader.subtitle() }}</p>
 
       <div class="loader-dots" aria-hidden="true">
-        <span class="dot dot-purple"></span>
         <span class="dot dot-blue"></span>
-        <span class="dot dot-teal"></span>
+        <span class="dot dot-cyan"></span>
+        <span class="dot dot-green"></span>
       </div>
     </div>
   </div>

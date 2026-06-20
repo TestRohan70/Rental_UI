@@ -4,12 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
 import { LoginRequest } from './login/login-request';
+import { BrandLogo } from '../../../../shared/components/brand-logo/brand-logo';
 import { LoaderService } from '../../../../core/services/loader.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink],
+  imports: [FormsModule, CommonModule, RouterLink, BrandLogo],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })

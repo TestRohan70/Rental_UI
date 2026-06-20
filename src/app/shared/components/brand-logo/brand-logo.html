@@ -1,0 +1,38 @@
+<div
+  class="brand-logo"
+  [class.brand-logo--sm]="size() === 'sm'"
+  [class.brand-logo--md]="size() === 'md'"
+  [class.brand-logo--lg]="size() === 'lg'"
+  [class.brand-logo--interactive]="interactive()"
+  [class.brand-logo--animate]="animate()"
+  [attr.tabindex]="interactive() ? 0 : null"
+  role="img"
+  aria-label="Premisus 360"
+>
+  <div class="brand-logo-stage">
+    <div class="brand-logo-orbit" aria-hidden="true">
+      <span class="orbit-glow"></span>
+      <span class="orbit-ring orbit-ring-outer"></span>
+      <span class="orbit-ring orbit-ring-inner"></span>
+      <span class="orbit-spark orbit-spark-1"></span>
+      <span class="orbit-spark orbit-spark-2"></span>
+    </div>
+
+    <div class="brand-logo-emblem">
+      <img
+        src="/images/premisus-360-logo-transparent.png"
+        alt=""
+        class="brand-logo-image"
+        draggable="false"
+      />
+    </div>
+  </div>
+
+  @if (showTagline()) {
+    <p class="brand-logo-tagline" aria-hidden="true">
+      <span class="tagline-word">Manage.</span>
+      <span class="tagline-word">Optimize.</span>
+      <span class="tagline-word">Connect.</span>
+    </p>
+  }
+</div>

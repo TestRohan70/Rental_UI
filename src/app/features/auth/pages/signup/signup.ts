@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ResidentService } from './services/resident.service';
 import { RegisterRequest } from './signup/register-request';
+import { BrandLogo } from '../../../../shared/components/brand-logo/brand-logo';
 import { LoaderService } from '../../../../core/services/loader.service';
 
 type FormStep = 1 | 2;
@@ -17,7 +18,7 @@ interface SignupForm extends Omit<RegisterRequest, 'flatNo'> {
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink],
+  imports: [FormsModule, CommonModule, RouterLink, BrandLogo],
   templateUrl: './signup.html',
   styleUrls: ['../../styles/auth-theme.css', './signup.css']
 })

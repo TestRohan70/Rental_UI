@@ -2,12 +2,13 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PendingResidentsService } from '../../core/services/pending-residents.service';
+import { BrandLogo } from '../../shared/components/brand-logo/brand-logo';
 import { LoaderService } from '../../core/services/loader.service';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, BrandLogo],
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })

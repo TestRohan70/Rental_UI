@@ -11,7 +11,7 @@ export interface LoaderOptions {
 export class LoaderService {
   readonly isVisible = signal(false);
   readonly message = signal('Loading...');
-  readonly subtitle = signal('Please wait while we prepare everything for you.');
+  readonly subtitle = signal('Please wait while Premisus 360 prepares everything for you.');
 
   private activeRequests = 0;
   private manualLocks = 0;
@@ -49,7 +49,7 @@ export class LoaderService {
     this.manualLocks = 0;
     this.isVisible.set(false);
     this.message.set('Loading...');
-    this.subtitle.set('Please wait while we prepare everything for you.');
+    this.subtitle.set('Please wait while Premisus 360 prepares everything for you.');
   }
 
   private updateVisibility(): void {
@@ -58,7 +58,7 @@ export class LoaderService {
 
     if (!visible) {
       this.message.set('Loading...');
-      this.subtitle.set('Please wait while we prepare everything for you.');
+      this.subtitle.set('Please wait while Premisus 360 prepares everything for you.');
     }
   }
 }

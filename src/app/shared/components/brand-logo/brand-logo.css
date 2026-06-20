@@ -1,0 +1,229 @@
+.brand-logo {
+  --emblem-size: 168px;
+  --orbit-inset: 14%;
+  --logo-scale: 1.08;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  outline: none;
+  user-select: none;
+}
+
+.brand-logo--sm { --emblem-size: 108px; --logo-scale: 1.12; }
+.brand-logo--md { --emblem-size: 168px; --logo-scale: 1.08; }
+.brand-logo--lg { --emblem-size: 196px; --logo-scale: 1.06; }
+
+.brand-logo-stage {
+  position: relative;
+  width: var(--emblem-size);
+  height: var(--emblem-size);
+}
+
+.brand-logo-orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.orbit-glow {
+  position: absolute;
+  inset: -10%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(37, 99, 235, 0.28) 0%, transparent 52%),
+    radial-gradient(circle at 58% 58%, rgba(34, 197, 94, 0.16) 0%, transparent 48%);
+  filter: blur(2px);
+  animation: brandGlowPulse 4.5s ease-in-out infinite;
+}
+
+.orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.orbit-ring-outer {
+  inset: 0;
+  border-top-color: #2563eb;
+  border-right-color: #06b6d4;
+  border-bottom-color: #22c55e;
+  border-left-color: rgba(37, 99, 235, 0.12);
+  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.35));
+}
+
+.orbit-ring-inner {
+  inset: 9%;
+  border-bottom-color: rgba(34, 197, 94, 0.75);
+  border-left-color: rgba(6, 182, 212, 0.65);
+  border-top-color: rgba(255, 255, 255, 0.04);
+  border-right-color: transparent;
+  opacity: 0.7;
+}
+
+.orbit-spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.orbit-spark-1 {
+  top: 8%;
+  right: 18%;
+  background: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+}
+
+.orbit-spark-2 {
+  bottom: 12%;
+  left: 16%;
+  background: #4ade80;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+}
+
+.brand-logo--animate .orbit-ring-outer {
+  animation: brandOrbitSpin 14s linear infinite;
+}
+
+.brand-logo--animate .orbit-ring-inner {
+  animation: brandOrbitSpin 9s linear infinite reverse;
+}
+
+.brand-logo--animate .orbit-spark-1 {
+  animation: sparkPulse 3s ease-in-out infinite;
+}
+
+.brand-logo--animate .orbit-spark-2 {
+  animation: sparkPulse 3s ease-in-out infinite 1.5s;
+}
+
+.brand-logo-emblem {
+  position: absolute;
+  inset: var(--orbit-inset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(circle, #000 58%, transparent 76%);
+  mask-image: radial-gradient(circle, #000 58%, transparent 76%);
+}
+
+.brand-logo-image {
+  width: calc(100% * var(--logo-scale));
+  height: calc(100% * var(--logo-scale));
+  object-fit: contain;
+  object-position: center;
+  filter:
+    drop-shadow(0 6px 18px rgba(37, 99, 235, 0.22))
+    drop-shadow(0 0 28px rgba(34, 197, 94, 0.1));
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.35s ease;
+}
+
+.brand-logo--animate .brand-logo-image {
+  animation: brandFloat 5s ease-in-out infinite;
+}
+
+.brand-logo--interactive:hover .brand-logo-image,
+.brand-logo--interactive:focus-visible .brand-logo-image {
+  transform: scale(1.06) translateY(-3px);
+  filter:
+    drop-shadow(0 10px 28px rgba(37, 99, 235, 0.38))
+    drop-shadow(0 0 40px rgba(34, 197, 94, 0.22));
+}
+
+.brand-logo--interactive:hover .orbit-ring-outer,
+.brand-logo--interactive:focus-visible .orbit-ring-outer {
+  animation-duration: 5s;
+  filter: drop-shadow(0 0 14px rgba(6, 182, 212, 0.55));
+}
+
+.brand-logo--interactive:hover .orbit-glow,
+.brand-logo--interactive:focus-visible .orbit-glow {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.brand-logo--interactive:focus-visible .brand-logo-stage {
+  outline: 2px solid rgba(56, 189, 248, 0.45);
+  outline-offset: 6px;
+  border-radius: 50%;
+}
+
+.brand-logo-tagline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55em;
+  margin: 14px 0 0;
+  padding: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.tagline-word {
+  background: linear-gradient(135deg, #38bdf8 0%, #4ade80 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0.75;
+  transition: opacity 0.3s ease, transform 0.3s ease, letter-spacing 0.3s ease;
+}
+
+.brand-logo--interactive:hover .tagline-word,
+.brand-logo--interactive:focus-visible .tagline-word {
+  opacity: 1;
+}
+
+.brand-logo--interactive:hover .tagline-word:nth-child(1),
+.brand-logo--interactive:focus-visible .tagline-word:nth-child(1) {
+  transform: translateY(-1px);
+}
+
+.brand-logo--interactive:hover .tagline-word:nth-child(2),
+.brand-logo--interactive:focus-visible .tagline-word:nth-child(2) {
+  transform: translateY(-2px);
+  transition-delay: 0.05s;
+}
+
+.brand-logo--interactive:hover .tagline-word:nth-child(3),
+.brand-logo--interactive:focus-visible .tagline-word:nth-child(3) {
+  transform: translateY(-1px);
+  transition-delay: 0.1s;
+}
+
+@keyframes brandOrbitSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes brandGlowPulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%       { opacity: 0.95; transform: scale(1.05); }
+}
+
+@keyframes brandFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+@keyframes sparkPulse {
+  0%, 70%, 100% { opacity: 0; transform: scale(0.6); }
+  35%            { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-logo--animate .orbit-ring-outer,
+  .brand-logo--animate .orbit-ring-inner,
+  .brand-logo--animate .brand-logo-image,
+  .orbit-glow,
+  .orbit-spark {
+    animation: none !important;
+  }
+}
