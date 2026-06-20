@@ -1,6 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { PendingResidentsService } from '../../core/services/pending-residents.service';
+import { LoaderService } from '../../core/services/loader.service';
 
 @Component({
   selector: 'app-layout',
@@ -9,8 +11,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })
-export class Layout {
+export class Layout implements OnInit {
   private readonly router = inject(Router);
+  readonly pendingService = inject(PendingResidentsService);
+  readonly loader = inject(LoaderService);
 
   navItems = [
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
@@ -20,9 +24,48 @@ export class Layout {
     { label: 'Settings', icon: 'settings', route: '/settings' }
   ];
 
+  ngOnInit(): void {
+    this.loader.message.set('Loading...');
+    this.loader.subtitle.set('Please wait while we prepare your admin dashboard.');
+
+    this.pendingService.loadPendingResidents().subscribe(() => {
+      const shouldShowPopup = sessionStorage.getItem('showPendingPopup') === 'true';
+
+      if (shouldShowPopup && this.pendingService.pendingCount() > 0) {
+        this.pendingService.openApprovalPopup();
+        sessionStorage.removeItem('showPendingPopup');
+      }
+    });
+  }
+
+  openNotifications(): void {
+    if (this.pendingService.pendingCount() > 0) {
+      this.pendingService.openApprovalPopup();
+    }
+  }
+
+  closePopup(): void {
+    this.pendingService.closeApprovalPopup();
+  }
+
+  approveResident(id: number): void {
+    this.loader.message.set('Approving resident...');
+    this.loader.subtitle.set('Please wait while we update the registration status.');
+    this.pendingService.approveResident(id).subscribe();
+  }
+
+  rejectResident(id: number): void {
+    this.loader.message.set('Rejecting resident...');
+    this.loader.subtitle.set('Please wait while we update the registration status.');
+    this.pendingService.rejectResident(id).subscribe();
+  }
+
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     localStorage.removeItem('rememberMe');
+    sessionStorage.removeItem('showPendingPopup');
+    this.pendingService.pendingResidents.set([]);
     this.router.navigate(['/login']);
   }
 }

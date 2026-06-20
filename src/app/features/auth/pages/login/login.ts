@@ -1,28 +1,29 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
 import { LoginRequest } from './login/login-request';
+import { LoaderService } from '../../../../core/services/loader.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
 export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  readonly loader = inject(LoaderService);
 
-  isLoading = false;
   showPassword = false;
   rememberMe = false;
-  errorMessage = '';
+  errorMessage = signal('');
 
   loginModel: LoginRequest = {
-    email: '',
+    userName: '',
     password: ''
   };
 
@@ -31,19 +32,20 @@ export class Login {
   }
 
   onLogin(): void {
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
-    if (!this.loginModel.email || !this.loginModel.password) {
-      this.errorMessage = 'Please enter your email and password.';
+    if (!this.loginModel.userName || !this.loginModel.password) {
+      this.errorMessage.set('Please enter your username and password.');
       return;
     }
 
-    this.isLoading = true;
+    this.loader.message.set('Signing in...');
+    this.loader.subtitle.set('Please wait while we verify your credentials.');
 
-    this.authService.login(this.loginModel).subscribe({
+    this.authService.adminLogin(this.loginModel).subscribe({
       next: (response) => {
-        this.isLoading = false;
         localStorage.setItem('token', response.token);
+        localStorage.setItem('role', response.role);
 
         if (this.rememberMe) {
           localStorage.setItem('rememberMe', 'true');
@@ -51,17 +53,16 @@ export class Login {
           localStorage.removeItem('rememberMe');
         }
 
+        sessionStorage.setItem('showPendingPopup', 'true');
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
-        this.isLoading = false;
-
         if (error.status === 401) {
-          this.errorMessage = 'Invalid email or password. Please try again.';
+          this.errorMessage.set('Invalid username or password. Please try again.');
         } else if (error.status === 0) {
-          this.errorMessage = 'Cannot connect to server. Please check your network.';
+          this.errorMessage.set('Cannot connect to server. Please check your network.');
         } else {
-          this.errorMessage = 'An unexpected error occurred. Please try again later.';
+          this.errorMessage.set('An unexpected error occurred. Please try again later.');
         }
       }
     });

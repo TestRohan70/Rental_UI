@@ -1,0 +1,401 @@
+<div class="auth-page">
+
+  <div class="bg-gradient"></div>
+  <div class="bg-waves">
+    <svg class="wave wave-1" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="url(#signupWave1)" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,261.3C672,256,768,224,864,213.3C960,203,1056,213,1152,218.7C1248,224,1344,224,1392,224L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
+      <defs>
+        <linearGradient id="signupWave1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6366f1" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#a855f7" stop-opacity="0.5"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <svg class="wave wave-2" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="url(#signupWave2)" d="M0,256L48,245.3C96,235,192,213,288,208C384,203,480,213,576,218.7C672,224,768,224,864,213.3C960,203,1056,181,1152,181.3C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
+      <defs>
+        <linearGradient id="signupWave2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.45"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="network-dots" aria-hidden="true">
+    @for (dot of [1,2,3,4,5,6,7,8,9,10,11,12]; track dot) {
+      <span class="dot" [style.--i]="dot"></span>
+    }
+  </div>
+
+  <div class="float-icon float-icon--left" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  </div>
+  <div class="float-icon float-icon--top-right" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="8.5" cy="7" r="4"/>
+      <line x1="20" y1="8" x2="20" y2="14"/>
+      <line x1="23" y1="11" x2="17" y2="11"/>
+    </svg>
+  </div>
+  <div class="float-icon float-icon--bottom-right" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  </div>
+
+  <div class="auth-card signup-card">
+
+    @if (isSuccess()) {
+      <div class="success-state">
+        <div class="success-icon" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h2 class="welcome-title">Registration Successful!</h2>
+        <p class="welcome-subtitle success-message">
+          Your account has been submitted and is <strong>Pending</strong> admin approval.
+          You'll be able to sign in once an administrator approves your registration.
+        </p>
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          Status: Pending Approval
+        </div>
+        <button type="button" class="submit-btn" (click)="goToLogin()">
+          <span>Back to Sign In</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+    } @else {
+
+      <header class="brand-header">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="30" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+            <path d="M32 8 C32 8 18 14 18 22 C18 30 24 34 32 38 C40 34 46 30 46 22 C46 14 32 8 32 8Z" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" fill="none"/>
+            <path d="M22 42 C22 42 26 48 32 52 C38 48 42 42 42 42" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none"/>
+            <line x1="32" y1="22" x2="32" y2="34" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"/>
+            <line x1="26" y1="28" x2="38" y2="28" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"/>
+            <circle cx="32" cy="28" r="3" fill="rgba(255,255,255,0.6)"/>
+          </svg>
+        </div>
+        <h1 class="brand-title">
+          <span class="brand-pro">Pro</span><span class="brand-society">Society</span>
+        </h1>
+        <p class="brand-tagline">Professional Society Management System</p>
+      </header>
+
+      <div class="welcome-section">
+        <h2 class="welcome-title">Create Resident Account</h2>
+        <p class="welcome-subtitle">Register to join your society community</p>
+      </div>
+
+      <!-- Step indicator -->
+      <div class="step-indicator" role="tablist" aria-label="Registration steps">
+        <button
+          type="button"
+          class="step-item"
+          [class.active]="currentStep() === 1"
+          [class.completed]="currentStep() > 1"
+          (click)="goToStep(1)"
+          role="tab"
+          [attr.aria-selected]="currentStep() === 1">
+          <span class="step-number">1</span>
+          <span class="step-label">Personal Info</span>
+        </button>
+        <div class="step-line" [class.completed]="currentStep() > 1"></div>
+        <button
+          type="button"
+          class="step-item"
+          [class.active]="currentStep() === 2"
+          (click)="goToStep(2)"
+          role="tab"
+          [attr.aria-selected]="currentStep() === 2">
+          <span class="step-number">2</span>
+          <span class="step-label">Security</span>
+        </button>
+      </div>
+
+      <form class="auth-form" (ngSubmit)="onSubmit()" autocomplete="off" novalidate>
+
+        @if (errorMessage()) {
+          <div class="alert-error alert-shake" role="alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        @if (currentStep() === 1) {
+          <div class="step-panel">
+
+            <div class="field">
+              <label class="field-label" for="name">Full Name</label>
+              <div class="field-input-wrap">
+                <span class="field-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </span>
+                <input
+                  id="name"
+                  type="text"
+                  class="field-input"
+                  [class.is-invalid]="isFieldInvalid('name')"
+                  [class.is-valid]="touched['name'] && !getFieldError('name')"
+                  placeholder="Enter your full name"
+                  [(ngModel)]="form.name"
+                  name="name"
+                  (blur)="markTouched('name')"
+                  autocomplete="name"
+                  required/>
+              </div>
+              @if (isFieldInvalid('name')) {
+                <span class="field-error">{{ getFieldError('name') }}</span>
+              }
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="email">Email Address</label>
+              <div class="field-input-wrap">
+                <span class="field-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </span>
+                <input
+                  id="email"
+                  type="email"
+                  class="field-input"
+                  [class.is-invalid]="isFieldInvalid('email')"
+                  [class.is-valid]="touched['email'] && !getFieldError('email') && !emailServerError()"
+                  placeholder="Enter your email address"
+                  [(ngModel)]="form.email"
+                  name="email"
+                  (blur)="markTouched('email')"
+                  (input)="onEmailInput()"
+                  autocomplete="email"
+                  required/>
+              </div>
+              @if (emailServerError() || isFieldInvalid('email')) {
+                <span class="field-error">{{ getFieldError('email') }}</span>
+              }
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label" for="wing">Wing</label>
+                <div class="field-input-wrap">
+                  <select
+                    id="wing"
+                    class="field-select"
+                    [class.is-invalid]="isFieldInvalid('wing')"
+                    [(ngModel)]="form.wing"
+                    name="wing"
+                    (blur)="markTouched('wing')"
+                    required>
+                    <option value="" disabled selected>Select wing</option>
+                    @for (wing of wingOptions; track wing) {
+                      <option [value]="wing">Wing {{ wing }}</option>
+                    }
+                  </select>
+                </div>
+                @if (isFieldInvalid('wing')) {
+                  <span class="field-error">{{ getFieldError('wing') }}</span>
+                }
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="flatNo">Flat No.</label>
+                <div class="field-input-wrap">
+                  <span class="field-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="7" height="7"/>
+                      <rect x="14" y="3" width="7" height="7"/>
+                      <rect x="14" y="14" width="7" height="7"/>
+                      <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                  </span>
+                  <input
+                    id="flatNo"
+                    type="number"
+                    class="field-input"
+                    [class.is-invalid]="isFieldInvalid('flatNo')"
+                    [class.is-valid]="touched['flatNo'] && !getFieldError('flatNo')"
+                    placeholder="e.g. 101"
+                    [(ngModel)]="form.flatNo"
+                    name="flatNo"
+                    (blur)="markTouched('flatNo')"
+                    min="1"
+                    required/>
+                </div>
+                @if (isFieldInvalid('flatNo')) {
+                  <span class="field-error">{{ getFieldError('flatNo') }}</span>
+                }
+              </div>
+            </div>
+
+            <button type="button" class="submit-btn" (click)="nextStep()">
+              <span>Continue</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+        }
+
+        @if (currentStep() === 2) {
+          <div class="step-panel">
+
+            @if (errorMessage()) {
+              <div class="alert-error alert-shake" role="alert">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
+            <div class="field">
+              <label class="field-label" for="password">Password</label>
+              <div class="field-input-wrap">
+                <span class="field-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="field-input"
+                  [class.is-invalid]="isFieldInvalid('password')"
+                  placeholder="Create a password"
+                  [(ngModel)]="form.password"
+                  name="password"
+                  (blur)="markTouched('password')"
+                  (input)="markTouched('password')"
+                  autocomplete="new-password"
+                  required/>
+                <button type="button" class="eye-btn" (click)="togglePassword()" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'" tabindex="-1">
+                  @if (showPassword) {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (form.password) {
+                <div class="password-strength">
+                  <div class="strength-bar">
+                    <span class="strength-fill" [class]="passwordStrength"></span>
+                  </div>
+                  <span class="strength-label" [class]="passwordStrength">{{ passwordStrengthLabel }}</span>
+                </div>
+              }
+              @if (isFieldInvalid('password')) {
+                <span class="field-error">{{ getFieldError('password') }}</span>
+              } @else {
+                <span class="field-hint">Minimum 6 characters</span>
+              }
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="confirmPassword">Confirm Password</label>
+              <div class="field-input-wrap">
+                <span class="field-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input
+                  id="confirmPassword"
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  class="field-input"
+                  [class.is-invalid]="isFieldInvalid('confirmPassword')"
+                  [class.is-valid]="touched['confirmPassword'] && !getFieldError('confirmPassword') && form.confirmPassword"
+                  placeholder="Re-enter your password"
+                  [(ngModel)]="form.confirmPassword"
+                  name="confirmPassword"
+                  (blur)="markTouched('confirmPassword')"
+                  autocomplete="new-password"
+                  required/>
+                <button type="button" class="eye-btn" (click)="toggleConfirmPassword()" tabindex="-1" aria-label="Toggle confirm password visibility">
+                  @if (showConfirmPassword) {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (isFieldInvalid('confirmPassword')) {
+                <span class="field-error">{{ getFieldError('confirmPassword') }}</span>
+              }
+            </div>
+
+            <label class="terms-label">
+              <input type="checkbox" class="terms-check" [(ngModel)]="acceptTerms" name="acceptTerms"/>
+              <span class="terms-box"></span>
+              <span class="terms-text">
+                I agree to the society terms and confirm my information is accurate
+              </span>
+            </label>
+
+            <div class="btn-row">
+              <button type="button" class="secondary-btn" (click)="prevStep()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"/>
+                  <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Back
+              </button>
+              <button type="submit" class="submit-btn btn-half" [disabled]="loader.isVisible() || !acceptTerms">
+                <span>Create Account</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+      </form>
+
+      <p class="form-footer">
+        Already have an account?
+        <a routerLink="/login" class="auth-link">Sign in</a>
+      </p>
+    }
+  </div>
+</div>

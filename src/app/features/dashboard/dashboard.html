@@ -1,27 +1,91 @@
 <div class="dashboard">
   <header class="dashboard-header">
     <div>
-      <h1>Dashboard</h1>
-      <p>Welcome back — {{ currentDate }}</p>
+      <h1>Welcome Back 👋</h1>
+      <p class="dashboard-subtitle">{{ currentDate }}</p>
     </div>
+    @if (pendingService.pendingCount() > 0) {
+      <button type="button" class="alert-banner" (click)="openApprovalPopup()">
+        <span class="alert-icon">🔔</span>
+        <span>You have {{ pendingService.pendingCount() }} resident approval request@if (pendingService.pendingCount() !== 1) {s}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+    }
   </header>
 
   <section class="dashboard-cards">
     <div class="card">
-      <p class="card-label">Total Residents</p>
-      <h2 class="card-value">—</h2>
+      <p class="card-label">Pending Approvals</p>
+      <h2 class="card-value accent">{{ pendingService.pendingCount() }}</h2>
+      <p class="card-hint">Residents awaiting review</p>
     </div>
     <div class="card">
-      <p class="card-label">Pending Approvals</p>
+      <p class="card-label">Total Residents</p>
       <h2 class="card-value">—</h2>
+      <p class="card-hint">Approved members</p>
     </div>
     <div class="card">
       <p class="card-label">Active Rentals</p>
       <h2 class="card-value">—</h2>
+      <p class="card-hint">Currently active</p>
     </div>
     <div class="card">
       <p class="card-label">Notifications</p>
-      <h2 class="card-value">—</h2>
+      <h2 class="card-value">{{ pendingService.pendingCount() }}</h2>
+      <p class="card-hint">Unread alerts</p>
     </div>
   </section>
+
+  @if (pendingService.pendingCount() > 0) {
+    <section class="pending-section">
+      <div class="section-header">
+        <div>
+          <h3>Pending Resident Registrations</h3>
+          <p>New registrations waiting for admin approval</p>
+        </div>
+      </div>
+
+      <ul class="pending-table">
+        @for (resident of pendingService.pendingResidents(); track resident.id) {
+          <li class="pending-row">
+            <div class="row-main">
+              <span class="row-name">{{ resident.name }}</span>
+              <span class="row-meta">{{ resident.email }}</span>
+            </div>
+            <div class="row-location">
+              Wing {{ resident.wing }} · Flat {{ resident.flatNo }}
+            </div>
+            <span class="row-status">Pending</span>
+            <div class="row-actions">
+              <button
+                type="button"
+                class="row-approve"
+                [disabled]="pendingService.isProcessing(resident.id) || loader.isVisible()"
+                (click)="approveResident(resident.id)">
+                <span>✅</span>
+                <span>Approve</span>
+              </button>
+              <button
+                type="button"
+                class="row-reject"
+                [disabled]="pendingService.isProcessing(resident.id) || loader.isVisible()"
+                (click)="rejectResident(resident.id)">
+                <span>❌</span>
+                <span>Reject</span>
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  } @else if (!pendingService.isLoading()) {
+    <section class="empty-state">
+      <div class="empty-icon">✓</div>
+      <h3>All caught up</h3>
+      <p>No pending resident approval requests at the moment.</p>
+    </section>
+  }
 </div>
