@@ -12,6 +12,6 @@ export class AuthService {
   private readonly http = inject(HttpClient);
 
   adminLogin(data: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${environment.apiUrl}/Auth/admin-login`, data);
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/Auth/login`, data);
   }
 }
