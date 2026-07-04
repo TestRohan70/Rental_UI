@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PendingResidentsService } from '../../core/services/pending-residents.service';
 import { LoaderService } from '../../core/services/loader.service';
+import { getResidentLocationLabel, getResidentRoleClass, getResidentRoleLabel, getResidentUnitLabel } from '../../core/utils/resident-display.util';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,6 +14,10 @@ import { LoaderService } from '../../core/services/loader.service';
 export class Dashboard {
   readonly pendingService = inject(PendingResidentsService);
   readonly loader = inject(LoaderService);
+  readonly getResidentLocationLabel = getResidentLocationLabel;
+  readonly getResidentRoleLabel = getResidentRoleLabel;
+  readonly getResidentRoleClass = getResidentRoleClass;
+  readonly getResidentUnitLabel = getResidentUnitLabel;
 
   currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'

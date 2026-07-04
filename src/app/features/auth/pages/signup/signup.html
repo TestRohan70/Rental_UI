@@ -1,4 +1,8 @@
-<div class="auth-page">
+<div class="auth-page signup-page">
+
+  <div class="auth-theme-slot">
+    <app-theme-toggle />
+  </div>
 
   <div class="bg-gradient"></div>
   <div class="bg-waves">
@@ -183,7 +187,42 @@
               }
             </div>
 
-            <div class="field-row">
+            <div class="field">
+              <label class="field-label" for="role">Role</label>
+              <div class="field-input-wrap">
+                <span class="field-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                </span>
+                <select
+                  id="role"
+                  class="field-select"
+                  [class.is-invalid]="isFieldInvalid('role')"
+                  [(ngModel)]="form.role"
+                  name="role"
+                  (change)="onRoleChange()"
+                  (blur)="markTouched('role')"
+                  required>
+                  <option value="" disabled hidden>Select your role</option>
+                  @for (role of roleOptions; track role) {
+                    <option [value]="role">{{ role }}</option>
+                  }
+                </select>
+              </div>
+              @if (isFieldInvalid('role')) {
+                <span class="field-error">{{ getFieldError('role') }}</span>
+              }
+            </div>
+
+            @if (isSecurityRole) {
+              <p class="role-hint" role="status">
+                Security staff do not need wing or flat details.
+              </p>
+            }
+
+            @if (showUnitDetails) {
+            <div class="field-row unit-details">
               <div class="field">
                 <label class="field-label" for="wing">Wing</label>
                 <div class="field-input-wrap">
@@ -235,14 +274,17 @@
                 }
               </div>
             </div>
+            }
 
-            <button type="button" class="submit-btn" (click)="nextStep()">
-              <span>Continue</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"/>
-                <polyline points="12 5 19 12 12 19"/>
-              </svg>
-            </button>
+            <div class="step-actions">
+              <button type="button" class="submit-btn" (click)="nextStep()">
+                <span>Continue</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </div>
           </div>
         }
 

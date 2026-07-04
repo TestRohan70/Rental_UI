@@ -1,0 +1,192 @@
+<div class="gate-page">
+  <section class="stats-row">
+    <div class="stat-card">
+      <span class="stat-label">Awaiting Resident</span>
+      <strong class="stat-value pending">{{ pendingCount() }}</strong>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Ready to Acknowledge</span>
+      <strong class="stat-value approved">{{ approvedCount() }}</strong>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Total Active</span>
+      <strong class="stat-value">{{ requests().length }}</strong>
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+  @if (successMessage()) {
+    <div class="alert alert-success">{{ successMessage() }}</div>
+  }
+
+  <div class="gate-grid">
+    <section class="panel form-panel">
+      <div class="panel-header">
+        <h3>New Visitor Request</h3>
+        <p>Raise a request for Tenant/Owner approval at the gate</p>
+      </div>
+
+      <form class="gate-form" (ngSubmit)="submitRequest()" novalidate>
+        <div class="field">
+          <label for="visitorName">Visitor Name</label>
+          <input id="visitorName" class="gate-control" type="text" [(ngModel)]="form.visitorName" name="visitorName" placeholder="Full name of visitor" required />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="visitorPhone">Phone</label>
+            <input id="visitorPhone" class="gate-control" type="text" [(ngModel)]="form.visitorPhone" name="visitorPhone" placeholder="Optional" />
+          </div>
+          <div class="field">
+            <label for="purpose">Purpose</label>
+            <input id="purpose" class="gate-control" type="text" [(ngModel)]="form.purpose" name="purpose" placeholder="Delivery, guest, etc." />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="wing">Wing</label>
+            <select id="wing" class="gate-control gate-select" [(ngModel)]="form.wing" name="wing" (change)="onUnitChange()" required>
+              <option value="" disabled selected>Select wing</option>
+              @for (wing of wingOptions; track wing) {
+                <option [value]="wing">Wing {{ wing }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="flatNo">Flat No.</label>
+            <input id="flatNo" class="gate-control" type="number" [(ngModel)]="form.flatNo" name="flatNo" (blur)="onUnitChange()" placeholder="e.g. 101" min="1" required />
+          </div>
+        </div>
+
+        @if (residentPreview()) {
+          <div class="resident-preview" [class.is-error]="!residentPreview().includes(' · ')">
+            {{ residentPreview() }}
+          </div>
+        }
+
+        <div class="field photo-field">
+          <label for="visitorPhoto">Visitor Photo</label>
+          <p class="field-hint">Optional — helps the resident verify who is at the gate</p>
+
+          @if (photoPreviewUrl) {
+            <div class="photo-preview">
+              <img [src]="photoPreviewUrl" alt="Visitor preview" />
+              <div class="photo-preview-actions">
+                <button type="button" class="source-btn" (click)="openGalleryPicker()">Change from Gallery</button>
+                <button type="button" class="source-btn camera" (click)="openCamera()">Retake with Camera</button>
+                <button type="button" class="remove-photo-btn" (click)="clearPhoto()">Remove photo</button>
+              </div>
+            </div>
+          } @else {
+            <div class="photo-source-options">
+              <button type="button" class="photo-source-btn" (click)="openGalleryPicker()">
+                <span class="source-icon gallery-icon" aria-hidden="true"></span>
+                <span class="source-label">Gallery</span>
+                <span class="source-note">Pick saved photo</span>
+              </button>
+              <button type="button" class="photo-source-btn camera" (click)="openCamera()">
+                <span class="source-icon camera-icon" aria-hidden="true"></span>
+                <span class="source-label">Camera</span>
+                <span class="source-note">Take live photo</span>
+              </button>
+            </div>
+            <p class="upload-note centered">JPG, PNG, WEBP · max 5 MB</p>
+          }
+
+          <input
+            #galleryInput
+            id="visitorPhotoGallery"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            (change)="onGallerySelected($event)"
+            hidden
+          />
+        </div>
+
+        @if (showCamera()) {
+          <div class="camera-overlay" (click)="closeCamera()">
+            <div class="camera-modal" (click)="$event.stopPropagation()">
+              <div class="camera-modal-header">
+                <h4>Take Visitor Photo</h4>
+                <button type="button" class="camera-close-btn" (click)="closeCamera()" aria-label="Close camera">×</button>
+              </div>
+
+              <div class="camera-viewport">
+                @if (cameraStarting()) {
+                  <div class="camera-loading">Starting camera...</div>
+                }
+                <video #cameraVideo class="camera-video" autoplay playsinline muted></video>
+              </div>
+
+              <div class="camera-actions">
+                <button type="button" class="ghost-btn" (click)="closeCamera()">Cancel</button>
+                <button type="button" class="capture-btn" [disabled]="cameraStarting()" (click)="captureFromCamera()">
+                  Capture Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <button type="submit" class="primary-btn" [disabled]="loader.isVisible()">
+          Send Approval Request
+        </button>
+      </form>
+    </section>
+
+    <section class="panel queue-panel">
+      <div class="panel-header">
+        <div>
+          <h3>Gate Request Queue</h3>
+          <p>Track pending, approved, and acknowledged visitors</p>
+        </div>
+        <button type="button" class="ghost-btn" (click)="loadRequests()">Refresh</button>
+      </div>
+
+      <div class="filter-tabs">
+        <button type="button" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">All</button>
+        <button type="button" [class.active]="activeFilter() === 'Pending'" (click)="setFilter('Pending')">Pending</button>
+        <button type="button" [class.active]="activeFilter() === 'Approved'" (click)="setFilter('Approved')">Approved</button>
+        <button type="button" [class.active]="activeFilter() === 'Acknowledged'" (click)="setFilter('Acknowledged')">Done</button>
+      </div>
+
+      @if (filteredRequests().length === 0) {
+        <div class="empty-state">
+          <p>No visitor requests in this view.</p>
+        </div>
+      } @else {
+        <ul class="request-list">
+          @for (request of filteredRequests(); track request.id) {
+            <li class="request-card">
+              @if (getVisitorPhotoUrl(request.visitorPhotoUrl); as photoUrl) {
+                <img class="request-photo" [src]="photoUrl" [alt]="request.visitorName" />
+              }
+              <div class="request-main">
+                <div class="request-title-row">
+                  <strong>{{ request.visitorName }}</strong>
+                  <span class="status-badge" [class]="statusClass(request.status)">{{ request.status }}</span>
+                </div>
+                <p class="request-meta">
+                  Wing {{ request.wing }} · Flat {{ request.flatNo }} · {{ request.residentName }}
+                </p>
+                @if (request.purpose) {
+                  <p class="request-purpose">{{ request.purpose }}</p>
+                }
+                <span class="request-time">{{ request.createdDate | date:'short' }}</span>
+              </div>
+
+              @if (request.status === 'Approved') {
+                <button type="button" class="ack-btn" [disabled]="loader.isVisible()" (click)="acknowledge(request)">
+                  Acknowledge Entry
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+</div>

@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(5, 10, 24, 0.92);
+  background: var(--loader-overlay);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   animation: overlayFadeIn 0.25s ease;
@@ -34,20 +34,20 @@
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: #38bdf8;
+  color: var(--accent);
   margin-top: 4px;
   margin-bottom: 10px;
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 .loader-brand-360 {
-  color: #4ade80;
+  color: var(--success);
 }
 
 .loader-title {
   font-size: 22px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-heading);
   letter-spacing: -0.3px;
   margin-bottom: 8px;
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -55,7 +55,7 @@
 
 .loader-subtitle {
   font-size: 13.5px;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 400;
   max-width: 320px;
   line-height: 1.55;

@@ -1,0 +1,301 @@
+/* Premisus 360 — global design tokens (dark default, soft light mode) */
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-base: #050a18;
+  --bg-elevated: #0a1628;
+  --bg-soft: #0d1a35;
+  --app-gradient: linear-gradient(160deg, #050a18 0%, #0a1628 40%, #0d1a35 100%);
+  --auth-gradient:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 55%),
+    linear-gradient(160deg, #050a18 0%, #0a1628 40%, #0d1a35 70%, #0a0f24 100%);
+
+  --sidebar-bg: #050a18;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --brand-glow: rgba(37, 99, 235, 0.08);
+
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+  --surface-muted: rgba(255, 255, 255, 0.03);
+  --surface-strong: rgba(255, 255, 255, 0.07);
+  --surface-input: rgba(255, 255, 255, 0.05);
+  --surface-input-hover: rgba(255, 255, 255, 0.07);
+
+  --input-bg: #0f172a;
+  --topbar-bg: rgba(255, 255, 255, 0.02);
+  --modal-bg: rgba(255, 255, 255, 0.04);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-input: rgba(255, 255, 255, 0.12);
+
+  --text-heading: #ffffff;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #0f172a;
+
+  --accent: #38bdf8;
+  --accent-strong: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.15);
+  --accent-soft-hover: rgba(59, 130, 246, 0.22);
+  --accent-border: rgba(59, 130, 246, 0.35);
+  --accent-text: #93c5fd;
+  --accent-label: #64748b;
+
+  --success: #34d399;
+  --success-soft: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.35);
+  --success-text: #6ee7b7;
+
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.12);
+  --warning-border: rgba(251, 191, 36, 0.25);
+
+  --danger: #f87171;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.35);
+  --danger-text: #fca5a5;
+
+  --overlay: rgba(5, 10, 24, 0.75);
+  --loader-overlay: rgba(5, 10, 24, 0.92);
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --focus-ring: rgba(59, 130, 246, 0.15);
+
+  --select-option-bg: #0f172a;
+  --scrollbar-thumb: rgba(148, 163, 184, 0.35);
+
+  --card-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+  --float-icon-bg: rgba(255, 255, 255, 0.04);
+  --float-icon-border: rgba(255, 255, 255, 0.1);
+  --float-icon-color: rgba(255, 255, 255, 0.55);
+
+  --logo-emblem-bg: transparent;
+  --logo-emblem-shadow: none;
+  --logo-tagline-from: #38bdf8;
+  --logo-tagline-to: #4ade80;
+
+  --link-color: #38bdf8;
+  --link-hover: #7dd3fc;
+  --checkbox-border: rgba(255, 255, 255, 0.2);
+  --checkbox-bg: rgba(255, 255, 255, 0.05);
+  --text-on-primary: #ffffff;
+  --danger-soft-hover: rgba(239, 68, 68, 0.2);
+
+  --banner-info-bg: rgba(59, 130, 246, 0.12);
+  --banner-info-border: rgba(59, 130, 246, 0.3);
+  --banner-info-text: #38bdf8;
+
+  --badge-security-text: #93c5fd;
+  --badge-security-bg: rgba(59, 130, 246, 0.12);
+  --badge-security-border: rgba(59, 130, 246, 0.28);
+  --badge-tenant-text: #c4b5fd;
+  --badge-tenant-bg: rgba(139, 92, 246, 0.12);
+  --badge-tenant-border: rgba(139, 92, 246, 0.28);
+  --badge-owner-text: #6ee7b7;
+  --badge-owner-bg: rgba(16, 185, 129, 0.12);
+  --badge-owner-border: rgba(16, 185, 129, 0.28);
+  --badge-unknown-text: #cbd5e1;
+  --badge-unknown-bg: rgba(148, 163, 184, 0.12);
+  --badge-unknown-border: rgba(148, 163, 184, 0.28);
+
+  --status-pending-bg: rgba(251, 191, 36, 0.12);
+  --status-pending-text: #fbbf24;
+  --status-pending-border: rgba(251, 191, 36, 0.25);
+  --status-approved-bg: rgba(16, 185, 129, 0.12);
+  --status-approved-text: #34d399;
+  --status-approved-border: rgba(16, 185, 129, 0.28);
+  --status-rejected-bg: rgba(239, 68, 68, 0.12);
+  --status-rejected-text: #fca5a5;
+  --status-rejected-border: rgba(239, 68, 68, 0.28);
+  --status-neutral-bg: rgba(148, 163, 184, 0.12);
+  --status-neutral-text: #cbd5e1;
+  --status-neutral-border: rgba(148, 163, 184, 0.28);
+
+  --surface-card: rgba(255, 255, 255, 0.03);
+  --surface-card-border: rgba(255, 255, 255, 0.07);
+
+  --info-soft: rgba(59, 130, 246, 0.1);
+  --info-border: rgba(59, 130, 246, 0.25);
+  --info-text: #93c5fd;
+
+  --modal-surface: #0f172a;
+  --modal-overlay: rgba(2, 6, 23, 0.82);
+  --modal-viewport-bg: #020617;
+
+  --autofill-bg: #0f172a;
+  --autofill-text: #e2e8f0;
+
+  --logo-orbit-inner-top: rgba(255, 255, 255, 0.04);
+  --logo-image-filter:
+    drop-shadow(0 6px 18px rgba(37, 99, 235, 0.22))
+    drop-shadow(0 0 28px rgba(34, 197, 94, 0.1));
+  --logo-image-filter-hover:
+    drop-shadow(0 10px 28px rgba(37, 99, 235, 0.38))
+    drop-shadow(0 0 40px rgba(34, 197, 94, 0.22));
+  --logo-orbit-glow-opacity: 1;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-base: #e8edf4;
+  --bg-elevated: #f4f7fb;
+  --bg-soft: #eef2f7;
+  --app-gradient: linear-gradient(165deg, #e8edf4 0%, #f5f8fc 42%, #e2e8f0 100%);
+  --auth-gradient:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 55%),
+    linear-gradient(165deg, #e8edf4 0%, #f6f8fb 45%, #e2e8f0 100%);
+
+  --sidebar-bg: #f8fafc;
+  --sidebar-border: rgba(15, 23, 42, 0.08);
+  --brand-glow: rgba(37, 99, 235, 0.06);
+
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-muted: #f8fafc;
+  --surface-strong: #ffffff;
+  --surface-input: #ffffff;
+  --surface-input-hover: #f8fafc;
+
+  --input-bg: #ffffff;
+  --topbar-bg: rgba(255, 255, 255, 0.82);
+  --modal-bg: #ffffff;
+
+  --border: rgba(15, 23, 42, 0.1);
+  --border-strong: rgba(15, 23, 42, 0.14);
+  --border-input: rgba(15, 23, 42, 0.14);
+
+  --text-heading: #0b1220;
+  --text-primary: #1e293b;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-inverse: #ffffff;
+
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --accent-soft-hover: rgba(37, 99, 235, 0.18);
+  --accent-border: rgba(37, 99, 235, 0.28);
+  --accent-text: #1d4ed8;
+  --accent-label: #475569;
+
+  --success: #059669;
+  --success-soft: rgba(16, 185, 129, 0.1);
+  --success-border: rgba(16, 185, 129, 0.28);
+  --success-text: #047857;
+
+  --warning: #b45309;
+  --warning-soft: rgba(245, 158, 11, 0.14);
+  --warning-border: rgba(180, 83, 9, 0.24);
+
+  --danger: #dc2626;
+  --danger-soft: rgba(239, 68, 68, 0.08);
+  --danger-border: rgba(239, 68, 68, 0.22);
+  --danger-text: #b91c1c;
+
+  --overlay: rgba(15, 23, 42, 0.35);
+  --loader-overlay: rgba(248, 250, 252, 0.88);
+  --shadow-color: rgba(15, 23, 42, 0.1);
+  --focus-ring: rgba(37, 99, 235, 0.18);
+
+  --select-option-bg: #ffffff;
+  --scrollbar-thumb: rgba(100, 116, 139, 0.35);
+
+  --card-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --float-icon-bg: rgba(255, 255, 255, 0.88);
+  --float-icon-border: rgba(15, 23, 42, 0.1);
+  --float-icon-color: #64748b;
+
+  --logo-emblem-bg: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
+  --logo-emblem-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --logo-tagline-from: #2563eb;
+  --logo-tagline-to: #059669;
+
+  --link-color: #2563eb;
+  --link-hover: #1d4ed8;
+  --checkbox-border: rgba(15, 23, 42, 0.18);
+  --checkbox-bg: #ffffff;
+  --text-on-primary: #ffffff;
+  --danger-soft-hover: rgba(239, 68, 68, 0.14);
+
+  --banner-info-bg: rgba(37, 99, 235, 0.1);
+  --banner-info-border: rgba(37, 99, 235, 0.22);
+  --banner-info-text: #1e40af;
+
+  --badge-security-text: #1d4ed8;
+  --badge-security-bg: rgba(37, 99, 235, 0.1);
+  --badge-security-border: rgba(37, 99, 235, 0.22);
+  --badge-tenant-text: #6d28d9;
+  --badge-tenant-bg: rgba(109, 40, 217, 0.1);
+  --badge-tenant-border: rgba(109, 40, 217, 0.2);
+  --badge-owner-text: #047857;
+  --badge-owner-bg: rgba(5, 150, 105, 0.1);
+  --badge-owner-border: rgba(5, 150, 105, 0.22);
+  --badge-unknown-text: #475569;
+  --badge-unknown-bg: rgba(100, 116, 139, 0.12);
+  --badge-unknown-border: rgba(100, 116, 139, 0.2);
+
+  --status-pending-bg: rgba(245, 158, 11, 0.14);
+  --status-pending-text: #b45309;
+  --status-pending-border: rgba(180, 83, 9, 0.24);
+  --status-approved-bg: rgba(16, 185, 129, 0.1);
+  --status-approved-text: #047857;
+  --status-approved-border: rgba(16, 185, 129, 0.28);
+  --status-rejected-bg: rgba(239, 68, 68, 0.08);
+  --status-rejected-text: #b91c1c;
+  --status-rejected-border: rgba(239, 68, 68, 0.22);
+  --status-neutral-bg: rgba(100, 116, 139, 0.12);
+  --status-neutral-text: #475569;
+  --status-neutral-border: rgba(100, 116, 139, 0.2);
+
+  --surface-card: #f8fafc;
+  --surface-card-border: rgba(15, 23, 42, 0.08);
+
+  --info-soft: rgba(37, 99, 235, 0.1);
+  --info-border: rgba(37, 99, 235, 0.22);
+  --info-text: #1d4ed8;
+
+  --modal-surface: #ffffff;
+  --modal-overlay: rgba(15, 23, 42, 0.45);
+  --modal-viewport-bg: #0f172a;
+
+  --autofill-bg: #ffffff;
+  --autofill-text: #1e293b;
+
+  --logo-orbit-inner-top: rgba(15, 23, 42, 0.08);
+  --logo-image-filter:
+    drop-shadow(0 4px 12px rgba(37, 99, 235, 0.12))
+    drop-shadow(0 0 16px rgba(34, 197, 94, 0.06));
+  --logo-image-filter-hover:
+    drop-shadow(0 8px 20px rgba(37, 99, 235, 0.18))
+    drop-shadow(0 0 24px rgba(34, 197, 94, 0.1));
+  --logo-orbit-glow-opacity: 0.85;
+}
+
+html {
+  background: var(--bg-base);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.page-content {
+  padding: 0;
+}
+
+.page-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}

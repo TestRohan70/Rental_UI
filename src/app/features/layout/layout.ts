@@ -1,28 +1,39 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../core/services/auth.service';
 import { PendingResidentsService } from '../../core/services/pending-residents.service';
 import { BrandLogo } from '../../shared/components/brand-logo/brand-logo';
+import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
 import { LoaderService } from '../../core/services/loader.service';
+import { getResidentLocationLabel, getResidentRoleClass, getResidentRoleLabel, getResidentUnitLabel } from '../../core/utils/resident-display.util';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, BrandLogo],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, BrandLogo, ThemeToggle],
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })
 export class Layout implements OnInit {
-  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
   readonly pendingService = inject(PendingResidentsService);
   readonly loader = inject(LoaderService);
 
+  readonly adminName = this.authService.getUserName();
+  readonly getResidentLocationLabel = getResidentLocationLabel;
+  readonly getResidentRoleLabel = getResidentRoleLabel;
+  readonly getResidentRoleClass = getResidentRoleClass;
+  readonly getResidentUnitLabel = getResidentUnitLabel;
+
   navItems = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-    { label: 'Residents', icon: 'residents', route: '/residents' },
-    { label: 'Rentals', icon: 'rentals', route: '/rentals' },
-    { label: 'Notifications', icon: 'notifications', route: '/notifications' },
-    { label: 'Settings', icon: 'settings', route: '/settings' }
+    { label: 'Dashboard', icon: 'dashboard', route: '/admin/dashboard' },
+    { label: 'Residents', icon: 'residents', route: '/admin/residents' },
+    { label: 'Visitors', icon: 'visitors', route: '/admin/visitors' },
+    { label: 'Maintenance', icon: 'maintenance', route: '/admin/maintenance' },
+    { label: 'Parking Master', icon: 'parking', route: '/admin/parking-master' },
+    { label: 'Reports', icon: 'reports', route: '/admin/reports' },
+    { label: 'Settings', icon: 'settings', route: '/admin/settings' }
   ];
 
   ngOnInit(): void {
@@ -62,11 +73,7 @@ export class Layout implements OnInit {
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('rememberMe');
-    sessionStorage.removeItem('showPendingPopup');
     this.pendingService.pendingResidents.set([]);
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }

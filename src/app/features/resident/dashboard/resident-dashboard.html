@@ -1,0 +1,46 @@
+<div class="dashboard">
+  <header class="dashboard-header">
+    <div>
+      <h1>Welcome, {{ residentName }} 👋</h1>
+      <p class="dashboard-subtitle">{{ currentDate }}</p>
+    </div>
+  </header>
+
+  <section class="dashboard-cards">
+    <div class="card">
+      <p class="card-label">Current Maintenance Due</p>
+      <h2 class="card-value accent">—</h2>
+      <p class="card-hint">Amount pending</p>
+    </div>
+    <div class="card">
+      <p class="card-label">Upcoming Bookings</p>
+      <h2 class="card-value">—</h2>
+      <p class="card-hint">Scheduled spaces</p>
+    </div>
+    <div class="card">
+      <p class="card-label">Active Visitors</p>
+      <h2 class="card-value">—</h2>
+      <p class="card-hint">Currently visiting</p>
+    </div>
+    <div class="card">
+      <p class="card-label">Recent Notifications</p>
+      <h2 class="card-value">—</h2>
+      <p class="card-hint">Unread alerts</p>
+    </div>
+    <div class="card">
+      <p class="card-label">Service Request Status</p>
+      <h2 class="card-value">—</h2>
+      <p class="card-hint">Open requests</p>
+    </div>
+  </section>
+
+  <section class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-grid">
+      <a routerLink="/resident/visitors" class="action-card">Add Visitor</a>
+      <a routerLink="/resident/maintenance" class="action-card">Pay Maintenance</a>
+      <a routerLink="/resident/bookings" class="action-card">Book Space</a>
+      <a routerLink="/resident/service-requests" class="action-card">Raise Request</a>
+    </div>
+  </section>
+</div>

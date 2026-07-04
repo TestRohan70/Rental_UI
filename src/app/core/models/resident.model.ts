@@ -9,6 +9,7 @@ export interface Resident {
   parking?: boolean;
   noofParking?: number;
   ownershipType?: string;
+  role?: string;
   createdDate?: string;
   updatedDate?: string;
   status?: string;

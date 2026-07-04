@@ -1,11 +1,13 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ResidentService } from './services/resident.service';
 import { RegisterRequest } from './signup/register-request';
+import { requiresUnitDetails, RESIDENT_ROLE_OPTIONS, SECURITY_ROLE } from './signup/resident-role';
 import { BrandLogo } from '../../../../shared/components/brand-logo/brand-logo';
+import { ThemeToggle } from '../../../../shared/components/theme-toggle/theme-toggle';
 import { LoaderService } from '../../../../core/services/loader.service';
 
 type FormStep = 1 | 2;
@@ -18,11 +20,11 @@ interface SignupForm extends Omit<RegisterRequest, 'flatNo'> {
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink, BrandLogo],
+  imports: [FormsModule, CommonModule, RouterLink, BrandLogo, ThemeToggle],
   templateUrl: './signup.html',
   styleUrls: ['../../styles/auth-theme.css', './signup.css']
 })
-export class Signup {
+export class Signup implements OnInit {
   private readonly residentService = inject(ResidentService);
   private readonly router = inject(Router);
   readonly loader = inject(LoaderService);
@@ -38,15 +40,29 @@ export class Signup {
   touched: Record<string, boolean> = {};
 
   wingOptions = ['A', 'B', 'C', 'D', 'E', 'F'];
+  readonly roleOptions = RESIDENT_ROLE_OPTIONS;
 
   form: SignupForm = {
     name: '',
     email: '',
+    role: '',
     wing: '',
     flatNo: null,
     password: '',
     confirmPassword: ''
   };
+
+  ngOnInit(): void {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }
+
+  get isSecurityRole(): boolean {
+    return this.form.role === SECURITY_ROLE;
+  }
+
+  get showUnitDetails(): boolean {
+    return requiresUnitDetails(this.form.role);
+  }
 
   get passwordStrength(): 'weak' | 'medium' | 'strong' | null {
     const pwd = this.form.password;
@@ -83,6 +99,15 @@ export class Signup {
     }
   }
 
+  onRoleChange(): void {
+    if (this.isSecurityRole) {
+      this.form.wing = '';
+      this.form.flatNo = null;
+      delete this.touched['wing'];
+      delete this.touched['flatNo'];
+    }
+  }
+
   isFieldInvalid(field: keyof SignupForm): boolean {
     if (field === 'email' && this.emailServerError()) {
       return true;
@@ -109,10 +134,15 @@ export class Signup {
         if (!this.form.email.trim()) return 'Email is required.';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email)) return 'Enter a valid email address.';
         return null;
+      case 'role':
+        if (!this.form.role) return 'Please select your role.';
+        return null;
       case 'wing':
+        if (!this.showUnitDetails) return null;
         if (!this.form.wing) return 'Please select your wing.';
         return null;
       case 'flatNo':
+        if (!this.showUnitDetails) return null;
         if (this.form.flatNo === null || this.form.flatNo === undefined) return 'Flat number is required.';
         if (this.form.flatNo < 1 || this.form.flatNo > 9999) return 'Enter a valid flat number.';
         return null;
@@ -132,6 +162,7 @@ export class Signup {
   isStep1Valid(): boolean {
     return !this.getFieldError('name')
       && !this.getFieldError('email')
+      && !this.getFieldError('role')
       && !this.getFieldError('wing')
       && !this.getFieldError('flatNo');
   }
@@ -146,8 +177,12 @@ export class Signup {
     if (step === 2) {
       this.touched['name'] = true;
       this.touched['email'] = true;
-      this.touched['wing'] = true;
-      this.touched['flatNo'] = true;
+      this.touched['role'] = true;
+
+      if (this.showUnitDetails) {
+        this.touched['wing'] = true;
+        this.touched['flatNo'] = true;
+      }
 
       if (!this.isStep1Valid()) return;
     }
@@ -155,6 +190,10 @@ export class Signup {
     this.currentStep.set(step);
     this.errorMessage.set('');
     this.emailServerError.set('');
+
+    if (step === 2) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    }
   }
 
   nextStep(): void {
@@ -181,11 +220,15 @@ export class Signup {
     this.touched = {
       name: true,
       email: true,
-      wing: true,
-      flatNo: true,
+      role: true,
       password: true,
       confirmPassword: true
     };
+
+    if (this.showUnitDetails) {
+      this.touched['wing'] = true;
+      this.touched['flatNo'] = true;
+    }
 
     if (!this.isStep1Valid() || !this.isStep2Valid()) {
       if (!this.isStep1Valid()) {
@@ -201,8 +244,9 @@ export class Signup {
     const payload: RegisterRequest = {
       name: this.form.name.trim(),
       email: this.form.email.trim(),
-      wing: this.form.wing,
-      flatNo: Number(this.form.flatNo),
+      wing: this.isSecurityRole ? '—' : this.form.wing,
+      flatNo: this.isSecurityRole ? 0 : Number(this.form.flatNo),
+      role: this.form.role,
       password: this.form.password
     };
 

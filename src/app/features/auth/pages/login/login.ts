@@ -1,22 +1,22 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from './services/auth.service';
-import { LoginRequest } from './login/login-request';
 import { BrandLogo } from '../../../../shared/components/brand-logo/brand-logo';
+import { ThemeToggle } from '../../../../shared/components/theme-toggle/theme-toggle';
 import { LoaderService } from '../../../../core/services/loader.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { LoginRequest } from '../../../../core/models/login-response.model';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink, BrandLogo],
+  imports: [FormsModule, CommonModule, RouterLink, BrandLogo, ThemeToggle],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
 export class Login {
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
   readonly loader = inject(LoaderService);
 
   showPassword = false;
@@ -43,10 +43,9 @@ export class Login {
     this.loader.message.set('Signing in...');
     this.loader.subtitle.set('Please wait while we verify your credentials.');
 
-    this.authService.adminLogin(this.loginModel).subscribe({
+    this.authService.login(this.loginModel).subscribe({
       next: (response) => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('role', response.role);
+        this.authService.saveSession(response);
 
         if (this.rememberMe) {
           localStorage.setItem('rememberMe', 'true');
@@ -54,8 +53,11 @@ export class Login {
           localStorage.removeItem('rememberMe');
         }
 
-        sessionStorage.setItem('showPendingPopup', 'true');
-        this.router.navigate(['/dashboard']);
+        if (response.role === 'Admin') {
+          sessionStorage.setItem('showPendingPopup', 'true');
+        }
+
+        this.authService.redirectAfterLogin(response);
       },
       error: (error) => {
         if (error.status === 401) {

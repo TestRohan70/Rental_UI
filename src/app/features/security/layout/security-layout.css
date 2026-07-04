@@ -1,0 +1,16 @@
+@import '../../layout/layout.css';
+
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+}
+
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  box-shadow: inset 0 0 0 1px var(--accent-border);
+}
+
+.topbar-label {
+  color: var(--accent-label);
+}

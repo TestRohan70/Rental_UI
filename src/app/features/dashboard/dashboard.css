@@ -14,14 +14,14 @@
 .dashboard-header h1 {
   font-size: 22px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-heading);
   letter-spacing: -0.3px;
   margin-bottom: 6px;
 }
 
 .dashboard-subtitle {
   font-size: 13.5px;
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 .alert-banner {
@@ -30,19 +30,20 @@
   gap: 10px;
   padding: 12px 18px;
   border-radius: 10px;
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #38bdf8;
+  background: var(--banner-info-bg);
+  border: 1px solid var(--banner-info-border);
+  color: var(--banner-info-text);
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
 
 .alert-banner:hover {
-  background: rgba(59, 130, 246, 0.18);
-  border-color: rgba(59, 130, 246, 0.45);
+  background: var(--accent-soft-hover);
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
 }
 
 .alert-icon {
@@ -59,15 +60,22 @@
 .card {
   padding: 22px 20px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow);
+  border-color: var(--accent-border);
 }
 
 .card-label {
   font-size: 12.5px;
-  color: #64748b;
+  color: var(--text-muted);
   margin-bottom: 8px;
   font-weight: 500;
 }
@@ -75,42 +83,43 @@
 .card-value {
   font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-heading);
   letter-spacing: -0.5px;
   margin-bottom: 4px;
 }
 
 .card-value.accent {
-  color: #38bdf8;
+  color: var(--accent);
 }
 
 .card-hint {
   font-size: 12px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .pending-section {
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface);
+  border: 1px solid var(--border);
   overflow: hidden;
+  box-shadow: var(--card-shadow);
 }
 
 .section-header {
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border);
 }
 
 .section-header h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .section-header p {
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 .pending-table {
@@ -123,7 +132,12 @@
   align-items: center;
   gap: 16px;
   padding: 16px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+}
+
+.pending-row:hover {
+  background: var(--surface-hover);
 }
 
 .row-actions {
@@ -145,17 +159,61 @@
 .row-name {
   font-size: 14px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-heading);
 }
 
 .row-meta {
   font-size: 12.5px;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 .row-location {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-muted);
+}
+
+.row-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+}
+
+.role-badge--security {
+  color: var(--badge-security-text);
+  background: var(--badge-security-bg);
+  border-color: var(--badge-security-border);
+}
+
+.role-badge--tenant {
+  color: var(--badge-tenant-text);
+  background: var(--badge-tenant-bg);
+  border-color: var(--badge-tenant-border);
+}
+
+.role-badge--owner {
+  color: var(--badge-owner-text);
+  background: var(--badge-owner-bg);
+  border-color: var(--badge-owner-border);
+}
+
+.role-badge--unknown {
+  color: var(--badge-unknown-text);
+  background: var(--badge-unknown-bg);
+  border-color: var(--badge-unknown-border);
 }
 
 .row-status {
@@ -163,9 +221,9 @@
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.12);
-  border: 1px solid rgba(251, 191, 36, 0.25);
+  color: var(--warning);
+  background: var(--warning-soft);
+  border: 1px solid var(--warning-border);
 }
 
 .row-approve {
@@ -175,7 +233,7 @@
   border: none;
   border-radius: 8px;
   background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-  color: #fff;
+  color: var(--text-on-primary);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -202,10 +260,10 @@
   height: 36px;
   padding: 0 14px;
   gap: 6px;
-  border: 1px solid rgba(239, 68, 68, 0.45);
+  border: 1px solid var(--danger-border);
   border-radius: 8px;
-  background: rgba(239, 68, 68, 0.12);
-  color: #fca5a5;
+  background: var(--danger-soft);
+  color: var(--danger-text);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -219,9 +277,9 @@
 
 .row-reject:hover:not(:disabled) {
   transform: translateY(-1px);
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.6);
-  color: #fecaca;
+  background: var(--danger-soft-hover);
+  border-color: var(--danger-border);
+  color: var(--danger);
 }
 
 .row-reject:disabled {
@@ -233,7 +291,7 @@
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #fff;
+  border-top-color: var(--text-on-primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -244,8 +302,8 @@
   text-align: center;
   padding: 48px 24px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .empty-icon {
@@ -253,9 +311,9 @@
   height: 48px;
   margin: 0 auto 16px;
   border-radius: 50%;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  background: var(--success-soft);
+  border: 1px solid var(--success-border);
+  color: var(--success);
   font-size: 20px;
   font-weight: 700;
   display: flex;
@@ -266,13 +324,13 @@
 .empty-state h3 {
   font-size: 18px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-heading);
   margin-bottom: 6px;
 }
 
 .empty-state p {
   font-size: 13.5px;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 768px) {

@@ -7,7 +7,7 @@
     @if (pendingService.pendingCount() > 0) {
       <button type="button" class="alert-banner" (click)="openApprovalPopup()">
         <span class="alert-icon">🔔</span>
-        <span>You have {{ pendingService.pendingCount() }} resident approval request@if (pendingService.pendingCount() !== 1) {s}</span>
+        <span>You have {{ pendingService.pendingCount() }} registration approval request@if (pendingService.pendingCount() !== 1) {s}</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"/>
           <polyline points="12 5 19 12 12 19"/>
@@ -18,24 +18,29 @@
 
   <section class="dashboard-cards">
     <div class="card">
-      <p class="card-label">Pending Approvals</p>
-      <h2 class="card-value accent">{{ pendingService.pendingCount() }}</h2>
-      <p class="card-hint">Residents awaiting review</p>
-    </div>
-    <div class="card">
       <p class="card-label">Total Residents</p>
       <h2 class="card-value">—</h2>
       <p class="card-hint">Approved members</p>
     </div>
     <div class="card">
-      <p class="card-label">Active Rentals</p>
+      <p class="card-label">Pending Maintenance</p>
       <h2 class="card-value">—</h2>
-      <p class="card-hint">Currently active</p>
+      <p class="card-hint">Open requests</p>
+    </div>
+    <div class="card">
+      <p class="card-label">Active Visitors</p>
+      <h2 class="card-value">—</h2>
+      <p class="card-hint">Currently inside</p>
+    </div>
+    <div class="card">
+      <p class="card-label">Available Parking</p>
+      <h2 class="card-value">—</h2>
+      <p class="card-hint">Open slots</p>
     </div>
     <div class="card">
       <p class="card-label">Notifications</p>
-      <h2 class="card-value">{{ pendingService.pendingCount() }}</h2>
-      <p class="card-hint">Unread alerts</p>
+      <h2 class="card-value accent">{{ pendingService.pendingCount() }}</h2>
+      <p class="card-hint">Pending approvals</p>
     </div>
   </section>
 
@@ -43,8 +48,8 @@
     <section class="pending-section">
       <div class="section-header">
         <div>
-          <h3>Pending Resident Registrations</h3>
-          <p>New registrations waiting for admin approval</p>
+          <h3>Pending Registrations</h3>
+          <p>New sign-ups waiting for admin approval</p>
         </div>
       </div>
 
@@ -55,8 +60,13 @@
               <span class="row-name">{{ resident.name }}</span>
               <span class="row-meta">{{ resident.email }}</span>
             </div>
-            <div class="row-location">
-              Wing {{ resident.wing }} · Flat {{ resident.flatNo }}
+            <div class="row-details">
+              <span [class]="getResidentRoleClass(resident)">
+                Role: {{ getResidentRoleLabel(resident) }}
+              </span>
+              @if (getResidentUnitLabel(resident); as unitLabel) {
+                <span class="row-location">{{ unitLabel }}</span>
+              }
             </div>
             <span class="row-status">Pending</span>
             <div class="row-actions">
@@ -85,7 +95,7 @@
     <section class="empty-state">
       <div class="empty-icon">✓</div>
       <h3>All caught up</h3>
-      <p>No pending resident approval requests at the moment.</p>
+      <p>No pending registration approval requests at the moment.</p>
     </section>
   }
 </div>

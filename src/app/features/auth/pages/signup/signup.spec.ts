@@ -26,5 +26,28 @@ describe('Signup', () => {
     component.form.name = '';
     component.markTouched('name');
     expect(component.getFieldError('name')).toBeTruthy();
+
+    component.form.role = '';
+    component.markTouched('role');
+    expect(component.getFieldError('role')).toBe('Please select your role.');
+  });
+
+  it('should not require wing and flat for security role', () => {
+    component.form.role = 'Security';
+    component.onRoleChange();
+    component.markTouched('wing');
+    component.markTouched('flatNo');
+
+    expect(component.showUnitDetails).toBeFalse();
+    expect(component.getFieldError('wing')).toBeNull();
+    expect(component.getFieldError('flatNo')).toBeNull();
+    expect(component.isStep1Valid()).toBeFalse();
+
+    component.form.name = 'Security Guard';
+    component.form.email = 'guard@example.com';
+    component.markTouched('name');
+    component.markTouched('email');
+
+    expect(component.isStep1Valid()).toBeTrue();
   });
 });
