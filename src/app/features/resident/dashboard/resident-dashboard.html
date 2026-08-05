@@ -3,8 +3,27 @@
     <div>
       <h1>Welcome, {{ residentName }} 👋</h1>
       <p class="dashboard-subtitle">{{ currentDate }}</p>
+      @if (unitLabel) {
+        <p class="dashboard-unit">Unit: {{ unitLabel }}</p>
+      }
     </div>
+    @if (pendingCount() > 0) {
+      <a routerLink="/resident/visitors" class="alert-banner">
+        <span class="alert-icon">🔔</span>
+        <span>You have {{ pendingCount() }} visitor approval request@if (pendingCount() !== 1) {s}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </a>
+    }
   </header>
+
+  @if (loadError()) {
+    <div class="dashboard-alert dashboard-alert--error">
+      Unable to load visitor stats. Open <a routerLink="/resident/visitors">Visitors</a> to review requests.
+    </div>
+  }
 
   <section class="dashboard-cards">
     <div class="card">
@@ -17,15 +36,15 @@
       <h2 class="card-value">—</h2>
       <p class="card-hint">Scheduled spaces</p>
     </div>
-    <div class="card">
-      <p class="card-label">Active Visitors</p>
-      <h2 class="card-value">—</h2>
-      <p class="card-hint">Currently visiting</p>
+    <div class="card" [class.card--highlight]="pendingCount() > 0">
+      <p class="card-label">Pending Approvals</p>
+      <h2 class="card-value" [class.accent]="pendingCount() > 0">{{ displayCount(pendingCount()) }}</h2>
+      <p class="card-hint">Visitor requests awaiting you</p>
     </div>
     <div class="card">
-      <p class="card-label">Recent Notifications</p>
-      <h2 class="card-value">—</h2>
-      <p class="card-hint">Unread alerts</p>
+      <p class="card-label">Active Visitors</p>
+      <h2 class="card-value">{{ displayCount(activeCount()) }}</h2>
+      <p class="card-hint">Approved or checked in</p>
     </div>
     <div class="card">
       <p class="card-label">Service Request Status</p>
@@ -37,7 +56,12 @@
   <section class="quick-actions">
     <h3>Quick Actions</h3>
     <div class="action-grid">
-      <a routerLink="/resident/visitors" class="action-card">Add Visitor</a>
+      <a routerLink="/resident/visitors" class="action-card">
+        Review Visitors
+        @if (pendingCount() > 0) {
+          <span class="action-badge">{{ pendingCount() }}</span>
+        }
+      </a>
       <a routerLink="/resident/maintenance" class="action-card">Pay Maintenance</a>
       <a routerLink="/resident/bookings" class="action-card">Book Space</a>
       <a routerLink="/resident/service-requests" class="action-card">Raise Request</a>

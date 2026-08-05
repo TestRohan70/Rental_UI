@@ -1,0 +1,94 @@
+<div class="generate-alert-page">
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+  @if (successMessage()) {
+    <div class="alert alert-success">{{ successMessage() }}</div>
+  }
+
+  <div class="alert-grid">
+    <section class="panel form-panel">
+      <div class="panel-header">
+        <h3>Generate Alert</h3>
+        <p>Broadcast an important message to society residents and staff.</p>
+      </div>
+
+      <form class="alert-form" (ngSubmit)="submit()" novalidate>
+        <div class="field">
+          <label for="alertTitle">Alert Title</label>
+          <input
+            id="alertTitle"
+            class="alert-control"
+            type="text"
+            [(ngModel)]="form.title"
+            name="alertTitle"
+            (blur)="markTouched('title')"
+            [class.is-invalid]="isFieldInvalid('title')"
+            placeholder="Water supply interruption"
+            required />
+          @if (isFieldInvalid('title')) {
+            <span class="field-error">{{ getFieldError('title') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="alertType">Alert Type</label>
+          <select
+            id="alertType"
+            class="alert-control"
+            [(ngModel)]="form.alertType"
+            name="alertType">
+            @for (type of alertTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="alertMessage">Message</label>
+          <textarea
+            id="alertMessage"
+            class="alert-control alert-textarea"
+            rows="5"
+            [(ngModel)]="form.message"
+            name="alertMessage"
+            (blur)="markTouched('message')"
+            [class.is-invalid]="isFieldInvalid('message')"
+            placeholder="Describe the alert details for residents..."
+            required></textarea>
+          @if (isFieldInvalid('message')) {
+            <span class="field-error">{{ getFieldError('message') }}</span>
+          }
+        </div>
+
+        <button type="submit" class="submit-btn">Generate Alert</button>
+      </form>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="panel-header">
+        <h3>Recent Alerts</h3>
+        <p>{{ alertList().length }} alert{{ alertList().length === 1 ? '' : 's' }} sent</p>
+      </div>
+
+      @if (alertList().length === 0) {
+        <div class="empty-state">
+          <p>No alerts generated yet.</p>
+        </div>
+      } @else {
+        <div class="alert-list">
+          @for (alert of alertList(); track alert.id) {
+            <article class="alert-card">
+              <div class="alert-card-header">
+                <strong>{{ alert.title }}</strong>
+                <span [class]="alertTypeClass(alert.alertType)">{{ alert.alertType }}</span>
+              </div>
+              <p class="alert-message">{{ alert.message }}</p>
+              <span class="alert-meta">{{ formatDate(alert.createdDate) }}</span>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</div>

@@ -58,7 +58,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: -4px;
+  margin-top: 8px;
   padding: 10px 12px;
   border-radius: 10px;
   background: var(--accent-soft);
@@ -66,6 +66,89 @@
   color: var(--accent-text);
   font-size: 12.5px;
   line-height: 1.45;
+}
+
+.role-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.role-fieldset .field-label {
+  margin-bottom: 8px;
+}
+
+.role-radio-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.role-radio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-input);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.role-radio input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.role-radio-mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--checkbox-border);
+  background: var(--checkbox-bg);
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.role-radio-mark::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  transform: scale(0);
+  transition: transform 0.15s ease;
+}
+
+.role-radio input:checked + .role-radio-mark {
+  border-color: var(--accent-strong);
+}
+
+.role-radio input:checked + .role-radio-mark::after {
+  transform: scale(1);
+}
+
+.role-radio--active,
+.role-radio:hover {
+  border-color: var(--accent-border);
+  background: var(--surface-input-hover);
+}
+
+.role-radio-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+@media (max-width: 420px) {
+  .role-radio-group {
+    grid-template-columns: 1fr;
+  }
 }
 
 .unit-details {

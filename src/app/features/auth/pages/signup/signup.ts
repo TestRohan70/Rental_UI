@@ -5,7 +5,13 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ResidentService } from './services/resident.service';
 import { RegisterRequest } from './signup/register-request';
-import { requiresUnitDetails, RESIDENT_ROLE_OPTIONS, SECURITY_ROLE } from './signup/resident-role';
+import {
+  requiresUnitDetails,
+  mapSignupRoleToApiRole,
+  SIGNUP_ACCOUNT_OPTIONS,
+  SignupAccountType,
+  signupRoleHint
+} from './signup/resident-role';
 import { BrandLogo } from '../../../../shared/components/brand-logo/brand-logo';
 import { ThemeToggle } from '../../../../shared/components/theme-toggle/theme-toggle';
 import { LoaderService } from '../../../../core/services/loader.service';
@@ -40,12 +46,13 @@ export class Signup implements OnInit {
   touched: Record<string, boolean> = {};
 
   wingOptions = ['A', 'B', 'C', 'D', 'E', 'F'];
-  readonly roleOptions = RESIDENT_ROLE_OPTIONS;
+  readonly signupAccountOptions = SIGNUP_ACCOUNT_OPTIONS;
+  accountType: SignupAccountType = 'Resident';
 
   form: SignupForm = {
     name: '',
     email: '',
-    role: '',
+    role: 'Owner',
     wing: '',
     flatNo: null,
     password: '',
@@ -56,12 +63,21 @@ export class Signup implements OnInit {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
   }
 
-  get isSecurityRole(): boolean {
-    return this.form.role === SECURITY_ROLE;
+  get showUnitDetails(): boolean {
+    return requiresUnitDetails(this.accountType);
   }
 
-  get showUnitDetails(): boolean {
-    return requiresUnitDetails(this.form.role);
+  get roleHint(): string {
+    return signupRoleHint(this.accountType);
+  }
+
+  onAccountTypeChange(): void {
+    if (!this.showUnitDetails) {
+      this.form.wing = '';
+      this.form.flatNo = null;
+      delete this.touched['wing'];
+      delete this.touched['flatNo'];
+    }
   }
 
   get passwordStrength(): 'weak' | 'medium' | 'strong' | null {
@@ -99,15 +115,6 @@ export class Signup implements OnInit {
     }
   }
 
-  onRoleChange(): void {
-    if (this.isSecurityRole) {
-      this.form.wing = '';
-      this.form.flatNo = null;
-      delete this.touched['wing'];
-      delete this.touched['flatNo'];
-    }
-  }
-
   isFieldInvalid(field: keyof SignupForm): boolean {
     if (field === 'email' && this.emailServerError()) {
       return true;
@@ -134,9 +141,6 @@ export class Signup implements OnInit {
         if (!this.form.email.trim()) return 'Email is required.';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email)) return 'Enter a valid email address.';
         return null;
-      case 'role':
-        if (!this.form.role) return 'Please select your role.';
-        return null;
       case 'wing':
         if (!this.showUnitDetails) return null;
         if (!this.form.wing) return 'Please select your wing.';
@@ -162,7 +166,6 @@ export class Signup implements OnInit {
   isStep1Valid(): boolean {
     return !this.getFieldError('name')
       && !this.getFieldError('email')
-      && !this.getFieldError('role')
       && !this.getFieldError('wing')
       && !this.getFieldError('flatNo');
   }
@@ -177,7 +180,6 @@ export class Signup implements OnInit {
     if (step === 2) {
       this.touched['name'] = true;
       this.touched['email'] = true;
-      this.touched['role'] = true;
 
       if (this.showUnitDetails) {
         this.touched['wing'] = true;
@@ -220,9 +222,8 @@ export class Signup implements OnInit {
     this.touched = {
       name: true,
       email: true,
-      role: true,
       password: true,
-      confirmPassword: true
+      confirmPassword: true,
     };
 
     if (this.showUnitDetails) {
@@ -244,9 +245,9 @@ export class Signup implements OnInit {
     const payload: RegisterRequest = {
       name: this.form.name.trim(),
       email: this.form.email.trim(),
-      wing: this.isSecurityRole ? '—' : this.form.wing,
-      flatNo: this.isSecurityRole ? 0 : Number(this.form.flatNo),
-      role: this.form.role,
+      wing: this.showUnitDetails ? this.form.wing : '—',
+      flatNo: this.showUnitDetails ? Number(this.form.flatNo) : 0,
+      role: mapSignupRoleToApiRole(this.accountType),
       password: this.form.password
     };
 

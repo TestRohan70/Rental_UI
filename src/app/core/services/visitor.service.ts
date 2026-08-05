@@ -18,6 +18,10 @@ export class VisitorService {
     return this.http.get<VisitorRequest[]>(`${environment.apiUrl}/Visitor/gate/${securityId}`);
   }
 
+  getGateRequestHistory(securityId: number): Observable<VisitorRequest[]> {
+    return this.http.get<VisitorRequest[]>(`${environment.apiUrl}/Visitor/gate/${securityId}/history`);
+  }
+
   getResidentRequests(residentId: number): Observable<VisitorRequest[]> {
     return this.http.get<VisitorRequest[]>(`${environment.apiUrl}/Visitor/resident/${residentId}`);
   }

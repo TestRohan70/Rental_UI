@@ -1,0 +1,121 @@
+<div class="register-staff-page">
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+  @if (successMessage()) {
+    <div class="alert alert-success">{{ successMessage() }}</div>
+  }
+
+  <div class="register-grid">
+    <section class="panel form-panel">
+      <div class="panel-header">
+        <h3>Register Gate Security</h3>
+        <p>Create gate security accounts from the admin panel. New staff can sign in immediately.</p>
+      </div>
+
+      <form class="staff-form" (ngSubmit)="submit()" novalidate>
+        <div class="field">
+          <label for="staffName">Full Name</label>
+          <input
+            id="staffName"
+            class="staff-control"
+            type="text"
+            [(ngModel)]="form.name"
+            name="staffName"
+            (blur)="markTouched('name')"
+            [class.is-invalid]="isFieldInvalid('name')"
+            placeholder="Security staff name"
+            required />
+          @if (isFieldInvalid('name')) {
+            <span class="field-error">{{ getFieldError('name') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="staffEmail">Email</label>
+          <input
+            id="staffEmail"
+            class="staff-control"
+            type="email"
+            [(ngModel)]="form.email"
+            name="staffEmail"
+            (blur)="markTouched('email')"
+            [class.is-invalid]="isFieldInvalid('email')"
+            placeholder="name@example.com"
+            autocomplete="email"
+            required />
+          @if (isFieldInvalid('email')) {
+            <span class="field-error">{{ getFieldError('email') }}</span>
+          }
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="staffPassword">Password</label>
+            <input
+              id="staffPassword"
+              class="staff-control"
+              type="password"
+              [(ngModel)]="form.password"
+              name="staffPassword"
+              (blur)="markTouched('password')"
+              [class.is-invalid]="isFieldInvalid('password')"
+              placeholder="Minimum 8 characters"
+              autocomplete="new-password"
+              required />
+            @if (isFieldInvalid('password')) {
+              <span class="field-error">{{ getFieldError('password') }}</span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="staffConfirmPassword">Confirm Password</label>
+            <input
+              id="staffConfirmPassword"
+              class="staff-control"
+              type="password"
+              [(ngModel)]="form.confirmPassword"
+              name="staffConfirmPassword"
+              (blur)="markTouched('confirmPassword')"
+              [class.is-invalid]="isFieldInvalid('confirmPassword')"
+              placeholder="Re-enter password"
+              autocomplete="new-password"
+              required />
+            @if (isFieldInvalid('confirmPassword')) {
+              <span class="field-error">{{ getFieldError('confirmPassword') }}</span>
+            }
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Register Security</button>
+      </form>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="panel-header">
+        <h3>Gate Security Team</h3>
+        <p>{{ staffList().length }} registered staff member{{ staffList().length === 1 ? '' : 's' }}</p>
+      </div>
+
+      @if (staffList().length === 0) {
+        <div class="empty-state">
+          <p>No gate security staff registered yet.</p>
+        </div>
+      } @else {
+        <div class="staff-list">
+          @for (staff of staffList(); track staff.id) {
+            <article class="staff-card">
+              <div class="staff-card-main">
+                <strong>{{ staff.name }}</strong>
+                <span>{{ staff.email }}</span>
+              </div>
+              <span class="status-badge" [class.is-active]="staff.status === 'Approved'">
+                {{ statusLabel(staff.status) }}
+              </span>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</div>

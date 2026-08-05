@@ -52,6 +52,30 @@
   align-items: start;
 }
 
+.gate-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.history-panel {
+  margin-top: 0;
+}
+
+.history-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.history-card {
+  opacity: 0.95;
+}
+
+.photo-source-btn.single {
+  width: 100%;
+}
+
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);

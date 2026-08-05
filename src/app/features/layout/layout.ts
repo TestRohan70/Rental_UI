@@ -28,6 +28,7 @@ export class Layout implements OnInit {
 
   navItems = [
     { label: 'Dashboard', icon: 'dashboard', route: '/admin/dashboard' },
+    { label: 'Register Security', icon: 'security-staff', route: '/admin/register-security' },
     { label: 'Residents', icon: 'residents', route: '/admin/residents' },
     { label: 'Visitors', icon: 'visitors', route: '/admin/visitors' },
     { label: 'Maintenance', icon: 'maintenance', route: '/admin/maintenance' },

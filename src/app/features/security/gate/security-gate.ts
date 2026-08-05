@@ -19,14 +19,15 @@ export class SecurityGate implements OnInit, OnDestroy {
   private readonly visitorService = inject(VisitorService);
   readonly loader = inject(LoaderService);
 
-  @ViewChild('galleryInput') galleryInput?: ElementRef<HTMLInputElement>;
   @ViewChild('cameraVideo') cameraVideo?: ElementRef<HTMLVideoElement>;
 
   readonly requests = signal<VisitorRequest[]>([]);
+  readonly historyRequests = signal<VisitorRequest[]>([]);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly residentPreview = signal('');
-  readonly activeFilter = signal<'all' | 'Pending' | 'Approved' | 'Acknowledged'>('all');
+  readonly activeFilter = signal<'all' | 'Pending' | 'Approved'>('all');
+  readonly historyFilter = signal<'Approved' | 'Rejected'>('Approved');
   readonly showCamera = signal(false);
   readonly cameraStarting = signal(false);
 
@@ -63,6 +64,21 @@ export class SecurityGate implements OnInit, OnDestroy {
     this.requests().filter((item) => item.status === 'Approved').length
   );
 
+  readonly filteredHistory = computed(() => {
+    const filter = this.historyFilter();
+    return this.historyRequests().filter((item) =>
+      filter === 'Approved' ? item.status === 'Acknowledged' : item.status === 'Rejected'
+    );
+  });
+
+  readonly approvedHistoryCount = computed(() =>
+    this.historyRequests().filter((item) => item.status === 'Acknowledged').length
+  );
+
+  readonly rejectedHistoryCount = computed(() =>
+    this.historyRequests().filter((item) => item.status === 'Rejected').length
+  );
+
   ngOnInit(): void {
     this.loadRequests();
   }
@@ -81,6 +97,11 @@ export class SecurityGate implements OnInit, OnDestroy {
     this.visitorService.getGateRequests(securityId).subscribe({
       next: (data) => this.requests.set(data),
       error: () => this.errorMessage.set('Unable to load gate requests.')
+    });
+
+    this.visitorService.getGateRequestHistory(securityId).subscribe({
+      next: (data) => this.historyRequests.set(data),
+      error: () => this.errorMessage.set('Unable to load request history.')
     });
   }
 
@@ -102,11 +123,6 @@ export class SecurityGate implements OnInit, OnDestroy {
         this.residentPreview.set(message);
       }
     });
-  }
-
-  openGalleryPicker(): void {
-    this.errorMessage.set('');
-    this.galleryInput?.nativeElement.click();
   }
 
   openCamera(): void {
@@ -176,7 +192,7 @@ export class SecurityGate implements OnInit, OnDestroy {
         this.cameraStarting.set(false);
       } catch {
         this.cameraStarting.set(false);
-        this.errorMessage.set('Unable to access camera. Allow permission or use Gallery.');
+        this.errorMessage.set('Unable to access camera. Please allow camera permission.');
         this.closeCamera();
       }
     }
@@ -215,25 +231,12 @@ export class SecurityGate implements OnInit, OnDestroy {
     );
   }
 
-  onGallerySelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-
-    if (!file) {
-      return;
-    }
-
-    this.setPhotoFile(file);
+  clearPhoto(): void {
+    this.clearPhotoPreview();
+    this.selectedPhoto = null;
   }
 
   private setPhotoFile(file: File): void {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      this.errorMessage.set('Please upload a JPG, PNG, or WEBP image.');
-      return;
-    }
-
     if (file.size > 5 * 1024 * 1024) {
       this.errorMessage.set('Photo must be 5 MB or smaller.');
       return;
@@ -243,15 +246,6 @@ export class SecurityGate implements OnInit, OnDestroy {
     this.clearPhotoPreview();
     this.selectedPhoto = file;
     this.photoPreviewUrl = URL.createObjectURL(file);
-  }
-
-  clearPhoto(): void {
-    this.clearPhotoPreview();
-    this.selectedPhoto = null;
-
-    if (this.galleryInput?.nativeElement) {
-      this.galleryInput.nativeElement.value = '';
-    }
   }
 
   private stopCamera(): void {
@@ -355,8 +349,16 @@ export class SecurityGate implements OnInit, OnDestroy {
     });
   }
 
-  setFilter(filter: 'all' | 'Pending' | 'Approved' | 'Acknowledged'): void {
+  setFilter(filter: 'all' | 'Pending' | 'Approved'): void {
     this.activeFilter.set(filter);
+  }
+
+  setHistoryFilter(filter: 'Approved' | 'Rejected'): void {
+    this.historyFilter.set(filter);
+  }
+
+  historyDate(request: VisitorRequest): string | undefined {
+    return request.acknowledgedDate ?? request.respondedDate ?? request.createdDate;
   }
 
   statusClass(status: string): string {

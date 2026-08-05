@@ -52,6 +52,11 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard').then(m => m.Dashboard)
       },
       {
+        path: 'register-security',
+        loadComponent: () =>
+          import('./features/admin/register-security/admin-register-security').then(m => m.AdminRegisterSecurity)
+      },
+      {
         path: 'residents',
         ...placeholder('Residents', 'Manage society residents, approvals, and member records.')
       },
@@ -140,6 +145,11 @@ export const routes: Routes = [
         path: 'gate',
         loadComponent: () =>
           import('./features/security/gate/security-gate').then(m => m.SecurityGate)
+      },
+      {
+        path: 'generate-alert',
+        loadComponent: () =>
+          import('./features/security/generate-alert/generate-alert').then(m => m.GenerateAlert)
       }
     ]
   },

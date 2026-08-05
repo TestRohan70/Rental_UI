@@ -28,4 +28,23 @@ export class AdminService {
       responseType: 'text'
     });
   }
+
+  getGateStaff(adminId: number): Observable<Resident[]> {
+    return this.http
+      .get<Resident[]>(`${environment.apiUrl}/Admin/gate-staff`, {
+        params: { adminId: adminId.toString() }
+      })
+      .pipe(map((residents) => residents.map((resident) => normalizeResident(resident))));
+  }
+
+  registerGateStaff(
+    adminId: number,
+    payload: { name: string; email: string; password: string }
+  ): Observable<Resident> {
+    return this.http
+      .post<Resident>(`${environment.apiUrl}/Admin/gate-staff`, payload, {
+        params: { adminId: adminId.toString() }
+      })
+      .pipe(map((resident) => normalizeResident(resident)));
+  }
 }
