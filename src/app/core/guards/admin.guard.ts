@@ -6,12 +6,12 @@ export const adminGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isAdmin()) {
-    return true;
-  }
-
   if (auth.isPAdmin()) {
     return router.createUrlTree(['/padmin/society-configuration']);
+  }
+
+  if (auth.isAdmin()) {
+    return true;
   }
 
   if (auth.isResident()) {

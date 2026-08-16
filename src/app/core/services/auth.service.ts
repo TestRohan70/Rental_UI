@@ -29,8 +29,13 @@ export class AuthService {
   }
 
   saveSession(response: LoginResponse): void {
+    const token = (response.token ?? '').trim();
+    if (!token) {
+      throw new Error('Login response did not include a token.');
+    }
+
     const role = this.normalizeRole(response.role);
-    localStorage.setItem('token', response.token);
+    localStorage.setItem('token', token);
     localStorage.setItem('role', role);
     localStorage.setItem('userId', String(response.userId));
     localStorage.setItem('userName', response.userName);
@@ -108,7 +113,8 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    return !!token && token.trim().length > 0;
   }
 
   isAdmin(): boolean {
@@ -149,33 +155,37 @@ export class AuthService {
     const role = this.normalizeRole(response.role);
 
     if (role === 'pAdmin') {
-      this.router.navigate(['/padmin/society-configuration']);
+      void this.router.navigateByUrl('/padmin/society-configuration', { replaceUrl: true });
       return;
     }
 
     if (role === 'Admin') {
-      this.router.navigate(['/admin/dashboard']);
+      void this.router.navigateByUrl('/admin/dashboard', { replaceUrl: true });
       return;
     }
 
     if (role === 'Resident') {
       if (response.profileRole === 'Security') {
-        this.router.navigate(['/security/gate']);
+        void this.router.navigateByUrl('/security/gate', { replaceUrl: true });
         return;
       }
 
-      this.router.navigate(['/resident/dashboard']);
+      void this.router.navigateByUrl('/resident/dashboard', { replaceUrl: true });
       return;
     }
 
-    this.router.navigate(['/login']);
+    void this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 
   redirectByRole(): void {
-    const role = this.getRole();
+    if (!this.isAuthenticated()) {
+      void this.router.navigateByUrl('/login', { replaceUrl: true });
+      return;
+    }
 
-    if (!this.isAuthenticated() || !role) {
-      this.router.navigate(['/login']);
+    const role = this.getEffectiveRole();
+    if (!role) {
+      void this.router.navigateByUrl('/login', { replaceUrl: true });
       return;
     }
 
@@ -202,18 +212,15 @@ export class AuthService {
     };
   }
 
-  /** Prefer JWT role claim over stale localStorage (fixes post-deploy role mismatches until re-login). */
+  /** Session role from login response is authoritative; JWT is fallback for restored sessions. */
   private getEffectiveRole(): string {
-    const fromToken = this.getRoleFromToken();
     const fromStorage = this.getRole();
-    const role = fromToken ?? fromStorage ?? '';
-    const normalized = this.normalizeRole(role);
-
-    if (fromStorage && normalized !== fromStorage) {
-      localStorage.setItem('role', normalized);
+    if (fromStorage) {
+      return this.normalizeRole(fromStorage);
     }
 
-    return normalized;
+    const fromToken = this.getRoleFromToken();
+    return this.normalizeRole(fromToken ?? '');
   }
 
   private getRoleFromToken(): string | null {
@@ -229,12 +236,20 @@ export class AuthService {
       }
 
       const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
-      const role =
+      const raw =
         payload.role ??
         payload.Role ??
         payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
 
-      return typeof role === 'string' ? role : null;
+      if (typeof raw === 'string') {
+        return raw;
+      }
+
+      if (Array.isArray(raw) && raw.length > 0) {
+        return typeof raw[0] === 'string' ? raw[0] : null;
+      }
+
+      return null;
     } catch {
       return null;
     }

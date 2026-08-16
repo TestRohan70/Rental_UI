@@ -45,7 +45,21 @@ export class Login {
 
     this.authService.login(this.loginModel).subscribe({
       next: (response) => {
-        this.authService.saveSession(response);
+        try {
+          this.authService.saveSession(response);
+        } catch {
+          this.errorMessage.set('Sign-in succeeded but the session could not be saved. Please try again.');
+          this.loader.hide();
+          return;
+        }
+
+        if (!this.authService.isAuthenticated()) {
+          this.errorMessage.set('Sign-in succeeded but no auth token was saved. Please clear cache and try again.');
+          this.loader.hide();
+          return;
+        }
+
+        this.loader.hide();
 
         if (this.rememberMe) {
           localStorage.setItem('rememberMe', 'true');
@@ -60,6 +74,7 @@ export class Login {
         this.authService.redirectAfterLogin(response);
       },
       error: (error) => {
+        this.loader.hide();
         if (error.status === 401) {
           this.errorMessage.set('Invalid username or password. Please try again.');
         } else if (error.status === 0) {
