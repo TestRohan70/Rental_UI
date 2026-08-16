@@ -14,6 +14,10 @@ export const guestGuard: CanActivateFn = () => {
     return router.createUrlTree(['/admin/dashboard']);
   }
 
+  if (auth.isPAdmin()) {
+    return router.createUrlTree(['/padmin/society-configuration']);
+  }
+
   if (auth.isSecurityStaff()) {
     return router.createUrlTree(['/security/gate']);
   }

@@ -5,6 +5,7 @@ import { residentGuard } from './core/guards/resident.guard';
 import { securityGuard } from './core/guards/security.guard';
 import { tenantOwnerGuard } from './core/guards/tenant-owner.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { padminGuard } from './core/guards/padmin.guard';
 
 const placeholder = (title: string, description: string) => ({
   loadComponent: () =>
@@ -127,6 +128,24 @@ export const routes: Routes = [
       {
         path: 'profile',
         ...placeholder('Profile', 'View and update your resident profile details.')
+      }
+    ]
+  },
+  {
+    path: 'padmin',
+    canActivate: [authGuard, padminGuard],
+    loadComponent: () =>
+      import('./features/padmin/layout/padmin-layout').then(m => m.PadminLayout),
+    children: [
+      {
+        path: '',
+        redirectTo: 'society-configuration',
+        pathMatch: 'full'
+      },
+      {
+        path: 'society-configuration',
+        loadComponent: () =>
+          import('./features/padmin/society-configuration/society-configuration').then(m => m.SocietyConfiguration)
       }
     ]
   },

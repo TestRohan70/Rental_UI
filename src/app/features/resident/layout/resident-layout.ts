@@ -1,9 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject, HostListener } from '@angular/core';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs/operators';
 import { BrandLogo } from '../../../shared/components/brand-logo/brand-logo';
 import { ThemeToggle } from '../../../shared/components/theme-toggle/theme-toggle';
 import { AuthService } from '../../../core/services/auth.service';
+import { createShellNav } from '../../../core/utils/shell-nav.util';
 
 @Component({
   selector: 'app-resident-layout',
@@ -14,6 +16,8 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class ResidentLayout {
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  readonly shell = createShellNav();
 
   readonly residentName = this.authService.getUserName();
 
@@ -28,7 +32,18 @@ export class ResidentLayout {
     { label: 'Profile', icon: 'profile', route: '/resident/profile' }
   ];
 
+  constructor() {
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
+      this.shell.closeNav();
+    });
+  }
+
   logout(): void {
     this.authService.logout();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.shell.closeNav();
   }
 }

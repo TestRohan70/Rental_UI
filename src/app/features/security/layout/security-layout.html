@@ -1,11 +1,13 @@
-<div class="shell">
-  <aside class="sidebar">
+<div class="shell" [class.shell--nav-open]="shell.navOpen()">
+  <button type="button" class="shell-backdrop" aria-label="Close navigation" (click)="shell.closeNav()"></button>
+
+  <aside class="sidebar" aria-label="Main navigation">
     <div class="brand">
       <app-brand-logo size="sm" [interactive]="true" />
     </div>
 
     <nav class="sidebar-nav">
-      <a class="nav-item" routerLink="/security/gate" routerLinkActive="active">
+      <a class="nav-item" routerLink="/security/gate" routerLinkActive="active" (click)="shell.closeNav()">
         <span class="nav-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -13,7 +15,7 @@
         </span>
         Gate Portal
       </a>
-      <a class="nav-item" routerLink="/security/generate-alert" routerLinkActive="active">
+      <a class="nav-item" routerLink="/security/generate-alert" routerLinkActive="active" (click)="shell.closeNav()">
         <span class="nav-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -36,12 +38,19 @@
 
   <main class="main-content">
     <header class="topbar">
-      <div class="topbar-left">
-        <p class="topbar-label">Secretary Portal</p>
-        <h2 class="topbar-title">Society Security Management</h2>
-        @if (securityName) {
-          <p class="topbar-user">On duty: {{ securityName }}</p>
-        }
+      <div class="topbar-row topbar-left">
+        <button type="button" class="menu-toggle" aria-label="Open navigation menu" (click)="shell.toggleNav()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div>
+          <p class="topbar-label">Secretary Portal</p>
+          <h2 class="topbar-title">Society Security Management</h2>
+          @if (securityName) {
+            <p class="topbar-user">On duty: {{ securityName }}</p>
+          }
+        </div>
       </div>
       <div class="topbar-actions">
         <app-theme-toggle />

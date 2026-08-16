@@ -1,6 +1,7 @@
-<div class="shell">
+<div class="shell" [class.shell--nav-open]="shell.navOpen()">
+  <button type="button" class="shell-backdrop" aria-label="Close navigation" (click)="shell.closeNav()"></button>
 
-  <aside class="sidebar">
+  <aside class="sidebar" aria-label="Main navigation">
     <div class="brand">
       <app-brand-logo size="sm" [interactive]="true" />
     </div>
@@ -10,7 +11,8 @@
         <a class="nav-item"
            [routerLink]="item.route"
            routerLinkActive="active"
-           [routerLinkActiveOptions]="{ exact: false }">
+           [routerLinkActiveOptions]="{ exact: false }"
+           (click)="shell.closeNav()">
           <span class="nav-icon">
             @switch (item.icon) {
               @case ('dashboard') {
@@ -83,12 +85,19 @@
 
   <main class="main-content">
     <header class="topbar">
-      <div class="topbar-left">
-        <p class="topbar-label">Resident Portal</p>
-        <h2 class="topbar-title">Premisus 360 Living</h2>
-        @if (residentName) {
-          <p class="topbar-user">Welcome, {{ residentName }}</p>
-        }
+      <div class="topbar-row topbar-left">
+        <button type="button" class="menu-toggle" aria-label="Open navigation menu" (click)="shell.toggleNav()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div>
+          <p class="topbar-label">Resident Portal</p>
+          <h2 class="topbar-title">Premisus 360 Living</h2>
+          @if (residentName) {
+            <p class="topbar-user">Welcome, {{ residentName }}</p>
+          }
+        </div>
       </div>
       <div class="topbar-actions">
         <app-theme-toggle />

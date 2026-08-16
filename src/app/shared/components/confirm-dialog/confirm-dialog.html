@@ -1,0 +1,27 @@
+@if (dialog.state(); as current) {
+  <div class="confirm-backdrop" role="presentation" (click)="dialog.cancel()">
+    <div
+      class="confirm-card"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'confirm-title'"
+      [attr.aria-describedby]="'confirm-message'"
+      (click)="$event.stopPropagation()">
+      <h2 id="confirm-title" class="confirm-title">{{ current.title }}</h2>
+      <p id="confirm-message" class="confirm-message">{{ current.message }}</p>
+      <div class="confirm-actions">
+        <button type="button" class="ui-btn ui-btn-secondary" (click)="dialog.cancel()">
+          {{ current.cancelLabel }}
+        </button>
+        <button
+          type="button"
+          class="ui-btn"
+          [class.ui-btn-danger]="current.tone === 'danger'"
+          [class.ui-btn-primary]="current.tone !== 'danger'"
+          (click)="dialog.accept()">
+          {{ current.confirmLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

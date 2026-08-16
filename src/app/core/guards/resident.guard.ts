@@ -14,6 +14,10 @@ export const residentGuard: CanActivateFn = () => {
     return true;
   }
 
+  if (auth.isPAdmin()) {
+    return router.createUrlTree(['/padmin/society-configuration']);
+  }
+
   if (auth.isAdmin()) {
     return router.createUrlTree(['/admin/dashboard']);
   }

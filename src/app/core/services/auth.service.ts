@@ -114,6 +114,10 @@ export class AuthService {
     return this.getRole() === 'Admin';
   }
 
+  isPAdmin(): boolean {
+    return this.getRole() === 'pAdmin';
+  }
+
   isResident(): boolean {
     return this.getRole() === 'Resident';
   }
@@ -141,6 +145,11 @@ export class AuthService {
   }
 
   redirectAfterLogin(response: Pick<LoginResponse, 'role' | 'profileRole'>): void {
+    if (response.role === 'pAdmin') {
+      this.router.navigate(['/padmin/society-configuration']);
+      return;
+    }
+
     if (response.role === 'Admin') {
       this.router.navigate(['/admin/dashboard']);
       return;

@@ -1,25 +1,30 @@
-import { Component, inject, HostListener } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { AuthService } from '../../../core/services/auth.service';
 import { BrandLogo } from '../../../shared/components/brand-logo/brand-logo';
 import { ThemeToggle } from '../../../shared/components/theme-toggle/theme-toggle';
-import { AuthService } from '../../../core/services/auth.service';
 import { createShellNav } from '../../../core/utils/shell-nav.util';
 
 @Component({
-  selector: 'app-security-layout',
+  selector: 'app-padmin-layout',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, BrandLogo, ThemeToggle],
-  templateUrl: './security-layout.html',
-  styleUrl: './security-layout.css'
+  templateUrl: './padmin-layout.html',
+  styleUrl: './padmin-layout.css'
 })
-export class SecurityLayout {
+export class PadminLayout {
   private readonly router = inject(Router);
   readonly authService = inject(AuthService);
   readonly shell = createShellNav();
 
-  readonly securityName = this.authService.getUserName();
+  readonly userName = this.authService.getUserName() ?? 'User';
+  readonly userInitial = this.userName.charAt(0).toUpperCase();
+
+  navItems = [
+    { label: 'Society Configuration', icon: 'society', route: '/padmin/society-configuration' }
+  ];
 
   constructor() {
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {

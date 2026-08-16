@@ -1,0 +1,29 @@
+@import '../../layout/layout.css';
+
+.sidebar-user {
+  padding: 0 12px 8px;
+}
+
+.user-chip--compact {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .sidebar-user {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-user {
+    display: none;
+  }
+
+  .user-chip--compact {
+    display: inline-flex;
+  }
+
+  .user-chip--compact .user-meta {
+    display: none;
+  }
+}

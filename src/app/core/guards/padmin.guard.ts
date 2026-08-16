@@ -2,16 +2,20 @@ import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
-export const adminGuard: CanActivateFn = () => {
+export const padminGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isAdmin()) {
+  if (auth.isPAdmin()) {
     return true;
   }
 
-  if (auth.isPAdmin()) {
-    return router.createUrlTree(['/padmin/society-configuration']);
+  if (auth.isAdmin()) {
+    return router.createUrlTree(['/admin/dashboard']);
+  }
+
+  if (auth.isSecurityStaff()) {
+    return router.createUrlTree(['/security/gate']);
   }
 
   if (auth.isResident()) {

@@ -208,7 +208,13 @@
 .alert-error svg { flex-shrink: 0; margin-top: 1px; }
 
 /* Fields */
-.field { display: flex; flex-direction: column; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
 
 .field-input-wrap {
   position: relative;

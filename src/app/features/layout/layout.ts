@@ -1,11 +1,13 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { PendingResidentsService } from '../../core/services/pending-residents.service';
 import { BrandLogo } from '../../shared/components/brand-logo/brand-logo';
 import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
 import { LoaderService } from '../../core/services/loader.service';
+import { createShellNav } from '../../core/utils/shell-nav.util';
 import { getResidentLocationLabel, getResidentRoleClass, getResidentRoleLabel, getResidentUnitLabel } from '../../core/utils/resident-display.util';
 
 @Component({
@@ -17,8 +19,10 @@ import { getResidentLocationLabel, getResidentRoleClass, getResidentRoleLabel, g
 })
 export class Layout implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   readonly pendingService = inject(PendingResidentsService);
   readonly loader = inject(LoaderService);
+  readonly shell = createShellNav();
 
   readonly adminName = this.authService.getUserName();
   readonly getResidentLocationLabel = getResidentLocationLabel;
@@ -38,6 +42,10 @@ export class Layout implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
+      this.shell.closeNav();
+    });
+
     this.loader.message.set('Loading...');
     this.loader.subtitle.set('Please wait while we prepare your admin dashboard.');
 
@@ -76,5 +84,10 @@ export class Layout implements OnInit {
   logout(): void {
     this.pendingService.pendingResidents.set([]);
     this.authService.logout();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.shell.closeNav();
   }
 }
