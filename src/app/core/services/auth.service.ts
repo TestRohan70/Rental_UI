@@ -29,8 +29,9 @@ export class AuthService {
   }
 
   saveSession(response: LoginResponse): void {
+    const role = this.normalizeRole(response.role);
     localStorage.setItem('token', response.token);
-    localStorage.setItem('role', response.role);
+    localStorage.setItem('role', role);
     localStorage.setItem('userId', String(response.userId));
     localStorage.setItem('userName', response.userName);
 
@@ -111,15 +112,15 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    return this.getRole() === 'Admin';
+    return this.getEffectiveRole() === 'Admin';
   }
 
   isPAdmin(): boolean {
-    return this.getRole() === 'pAdmin';
+    return this.getEffectiveRole() === 'pAdmin';
   }
 
   isResident(): boolean {
-    return this.getRole() === 'Resident';
+    return this.getEffectiveRole() === 'Resident';
   }
 
   isSecurityStaff(): boolean {
@@ -145,17 +146,19 @@ export class AuthService {
   }
 
   redirectAfterLogin(response: Pick<LoginResponse, 'role' | 'profileRole'>): void {
-    if (response.role === 'pAdmin') {
+    const role = this.normalizeRole(response.role);
+
+    if (role === 'pAdmin') {
       this.router.navigate(['/padmin/society-configuration']);
       return;
     }
 
-    if (response.role === 'Admin') {
+    if (role === 'Admin') {
       this.router.navigate(['/admin/dashboard']);
       return;
     }
 
-    if (response.role === 'Resident') {
+    if (role === 'Resident') {
       if (response.profileRole === 'Security') {
         this.router.navigate(['/security/gate']);
         return;
@@ -190,12 +193,72 @@ export class AuthService {
   private normalizeResponse(response: RawLoginResponse): LoginResponse {
     return {
       token: response.token ?? response.Token ?? '',
-      role: response.role ?? response.Role ?? '',
+      role: this.normalizeRole(response.role ?? response.Role ?? ''),
       userId: response.userId ?? response.UserId ?? 0,
       userName: response.userName ?? response.UserName ?? '',
       profileRole: response.profileRole ?? response.ProfileRole,
       wing: response.wing ?? response.Wing,
       flatNo: response.flatNo ?? response.FlatNo
     };
+  }
+
+  /** Prefer JWT role claim over stale localStorage (fixes post-deploy role mismatches until re-login). */
+  private getEffectiveRole(): string {
+    const fromToken = this.getRoleFromToken();
+    const fromStorage = this.getRole();
+    const role = fromToken ?? fromStorage ?? '';
+    const normalized = this.normalizeRole(role);
+
+    if (fromStorage && normalized !== fromStorage) {
+      localStorage.setItem('role', normalized);
+    }
+
+    return normalized;
+  }
+
+  private getRoleFromToken(): string | null {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) {
+        return null;
+      }
+
+      const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
+      const role =
+        payload.role ??
+        payload.Role ??
+        payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+      return typeof role === 'string' ? role : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private normalizeRole(role: string | null | undefined): string {
+    if (!role) {
+      return '';
+    }
+
+    const trimmed = role.trim();
+
+    if (trimmed.toLowerCase() === 'padmin') {
+      return 'pAdmin';
+    }
+
+    if (trimmed.toLowerCase() === 'admin') {
+      return 'Admin';
+    }
+
+    if (trimmed.toLowerCase() === 'resident') {
+      return 'Resident';
+    }
+
+    return trimmed;
   }
 }

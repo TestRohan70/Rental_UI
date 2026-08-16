@@ -10,12 +10,12 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  if (auth.isAdmin()) {
-    return router.createUrlTree(['/admin/dashboard']);
-  }
-
   if (auth.isPAdmin()) {
     return router.createUrlTree(['/padmin/society-configuration']);
+  }
+
+  if (auth.isAdmin()) {
+    return router.createUrlTree(['/admin/dashboard']);
   }
 
   if (auth.isSecurityStaff()) {
