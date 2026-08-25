@@ -10,26 +10,20 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  if (auth.isPAdmin()) {
+  if (auth.isSuperAdmin()) {
     return router.createUrlTree(['/padmin/society-configuration']);
   }
 
-  if (auth.isAdmin()) {
+  if (auth.isSocietyAdmin()) {
     return router.createUrlTree(['/admin/dashboard']);
   }
 
-  if (auth.isSecurityStaff()) {
+  if (auth.isSecurity()) {
     return router.createUrlTree(['/security/gate']);
   }
 
   if (auth.isResident()) {
     return router.createUrlTree(['/resident/dashboard']);
-  }
-
-  // Do not wipe sessions for valid pAdmin role stored at login
-  const storedRole = auth.getRole()?.trim().toLowerCase();
-  if (storedRole === 'padmin') {
-    return router.createUrlTree(['/padmin/society-configuration']);
   }
 
   auth.clearSession();

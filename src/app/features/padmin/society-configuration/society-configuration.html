@@ -1,454 +1,507 @@
 <div class="society-config-page page-container" (click)="clearMessages()">
   @if (errorMessage()) {
-    <div class="alert alert-error ui-alert" role="alert">
-      <span class="alert-icon" aria-hidden="true">!</span>
-      {{ errorMessage() }}
-    </div>
+  <div class="alert alert-error ui-alert" role="alert">
+    <span class="alert-icon" aria-hidden="true">!</span>
+    {{ errorMessage() }}
+  </div>
   }
   @if (successMessage()) {
-    <div class="alert alert-success ui-alert" role="status">
-      <span class="alert-icon" aria-hidden="true">✓</span>
-      {{ successMessage() }}
-    </div>
+  <div class="alert alert-success ui-alert" role="status">
+    <span class="alert-icon" aria-hidden="true">✓</span>
+    {{ successMessage() }}
+  </div>
   }
 
   @if (viewMode === 'list') {
-    <section class="hero-header">
-      <div class="hero-copy">
-        <span class="ui-eyebrow">Premisus 360</span>
-        <h1 class="ui-title">Society Configuration</h1>
-        <p class="ui-subtitle">Manage societies and configure their wings, floors, and flats before resident onboarding.</p>
+  <section class="hero-header">
+    <div class="hero-copy">
+      <span class="ui-eyebrow">Premisus 360</span>
+      <h1 class="ui-title">Society Configuration</h1>
+      <p class="ui-subtitle">Manage societies and configure their wings, floors, and flats before resident onboarding.
+      </p>
+    </div>
+    <button type="button" class="ui-btn ui-btn-primary" (click)="openCreateSociety()">
+      <span aria-hidden="true">+</span>
+      Create Society
+    </button>
+  </section>
+
+  <section class="panel filters-panel ui-card">
+    <div class="search-wrap">
+      <span class="search-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+      </span>
+      <input id="searchSociety" class="ui-input control-search" type="search" [(ngModel)]="searchTerm"
+        (keyup.enter)="loadSocieties()" placeholder="Search by society name or location..."
+        aria-label="Search societies" />
+    </div>
+    <button type="button" class="ui-btn ui-btn-secondary" (click)="loadSocieties()">Search</button>
+  </section>
+
+  <section class="panel table-panel ui-card">
+    <div class="table-toolbar">
+      <h2>Societies</h2>
+      <span class="table-count">{{ societies().length }} total</span>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table ui-table">
+        <thead>
+          <tr>
+            <th scope="col">Society</th>
+            <th scope="col">Location</th>
+            <th scope="col">Wings</th>
+            <th scope="col">Floors</th>
+            <th scope="col">Flats</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (societies().length === 0) {
+          <tr>
+            <td colspan="7">
+              <div class="ui-empty empty-state-table">
+                <div class="ui-empty-icon" aria-hidden="true">🏢</div>
+                <h4>No societies yet</h4>
+                <p>Create your first society to begin configuration.</p>
+                <button type="button" class="ui-btn ui-btn-primary" (click)="openCreateSociety()">Create
+                  Society</button>
+              </div>
+            </td>
+          </tr>
+          } @else {
+          @for (society of societies(); track society.id) {
+          <tr class="table-row">
+            <td data-label="Society">
+              <div class="society-cell">
+                <span class="society-avatar" aria-hidden="true">{{ society.name.charAt(0) }}</span>
+                <div>
+                  <strong>{{ society.name }}</strong>
+                  <span class="subtext">{{ society.code }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="muted-cell" data-label="Location">{{ society.location || '—' }}</td>
+            <td data-label="Wings"><span class="metric-pill">{{ society.wingCount }}</span></td>
+            <td data-label="Floors"><span class="metric-pill">{{ society.floorCount }}</span></td>
+            <td data-label="Flats"><span class="metric-pill">{{ society.flatCount }}</span></td>
+            <td data-label="Status">
+              <span class="status-badge" [class.is-active]="society.isConfigured">
+                {{ society.isConfigured ? 'Configured' : 'Draft' }}
+              </span>
+            </td>
+            <td class="actions-cell" data-label="Actions">
+              <button type="button" class="ui-btn ui-btn-secondary action-chip"
+                (click)="configureSociety(society)">Configure</button>
+              <button type="button" class="ui-btn ui-btn-ghost action-chip"
+                (click)="openEditSociety(society)">Edit</button>
+              <button type="button" class="ui-btn ui-btn-danger action-chip"
+                (click)="deleteSociety(society)">Delete</button>
+            </td>
+          </tr>
+          }
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  } @else {
+  @if (structure(); as current) {
+  <nav class="ui-breadcrumb" aria-label="Breadcrumb">
+    <button type="button" (click)="backToList()">Dashboard</button>
+    <span class="ui-breadcrumb-sep" aria-hidden="true">›</span>
+    <span aria-current="page">Society Configuration</span>
+    <span class="ui-breadcrumb-sep" aria-hidden="true">›</span>
+    <span>{{ current.society.name }}</span>
+  </nav>
+
+  <section class="configure-hero">
+    <button type="button" class="ui-btn ui-btn-ghost back-btn" (click)="backToList()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Back
+    </button>
+    <div class="configure-hero-main">
+      <div>
+        <span class="ui-eyebrow">Society setup</span>
+        <h1 class="ui-title">{{ current.society.name }}</h1>
+        <p class="location-line">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            aria-hidden="true">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          {{ current.society.location || 'Location not set' }}
+        </p>
       </div>
-      <button type="button" class="ui-btn ui-btn-primary" (click)="openCreateSociety()">
-        <span aria-hidden="true">+</span>
-        Create Society
+      <div class="hero-actions">
+        <button type="button" class="ui-btn ui-btn-secondary" (click)="navigateToAddSocietyAdmin()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="8.5" cy="7" r="4" />
+            <line x1="20" y1="8" x2="20" y2="14" />
+            <line x1="23" y1="11" x2="17" y2="11" />
+          </svg>
+          Add Society Admin
+        </button>
+        <button type="button" class="ui-btn ui-btn-primary" (click)="openGenerateModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            aria-hidden="true">
+            <path d="M12 3v18M3 12h18" />
+          </svg>
+          Generate Structure
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-row">
+    <article class="stat-card ui-card">
+      <span class="stat-label">Wings</span>
+      <strong class="stat-value">{{ current.society.wingCount }}</strong>
+    </article>
+    <article class="stat-card ui-card">
+      <span class="stat-label">Floors</span>
+      <strong class="stat-value">{{ current.society.floorCount }}</strong>
+    </article>
+    <article class="stat-card ui-card">
+      <span class="stat-label">Flats</span>
+      <strong class="stat-value">{{ current.society.flatCount }}</strong>
+    </article>
+  </div>
+
+  <div class="configure-grid">
+    <section class="panel tree-panel ui-card">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <span class="panel-icon panel-icon-tree" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            </svg>
+          </span>
+          <div>
+            <h3>Structure</h3>
+            <p>Wings, floors, and flats configured for this society</p>
+          </div>
+        </div>
+      </div>
+
+      @if (current.wings.length === 0) {
+      <div class="ui-empty">
+        <div class="ui-empty-icon" aria-hidden="true">📋</div>
+        <h4>No structure configured</h4>
+        <p>This society does not have any wings configured yet. Add a wing manually or generate the full structure.</p>
+        <button type="button" class="ui-btn ui-btn-primary" (click)="openGenerateModal()">Generate Structure</button>
+      </div>
+      } @else {
+      <div class="tree" role="tree" aria-label="Society structure">
+        @for (wingNode of current.wings; track wingNode.wing.id) {
+        <article class="tree-wing" [class.selected]="selectedWingId === wingNode.wing.id" role="treeitem"
+          [attr.aria-expanded]="isWingExpanded(wingNode.wing.id)">
+          <header class="tree-row wing-row">
+            <button type="button" class="tree-toggle" (click)="toggleWingExpanded(wingNode.wing.id)"
+              [attr.aria-label]="isWingExpanded(wingNode.wing.id) ? 'Collapse wing' : 'Expand wing'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                [class.is-expanded]="isWingExpanded(wingNode.wing.id)">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+            <button type="button" class="tree-node" (click)="selectWing(wingNode.wing.id)">
+              <span class="node-badge node-badge-wing" aria-hidden="true">W</span>
+              <span class="node-text">
+                <strong>{{ wingNode.wing.name }}</strong>
+                <small>{{ wingNode.floors.length }} floor(s) · {{ wingNode.wing.flatCount }} flat(s)</small>
+              </span>
+            </button>
+            <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text"
+              (click)="deactivateWing(wingNode.wing.id)">Remove Wing</button>
+          </header>
+
+          @if (isWingExpanded(wingNode.wing.id)) {
+          @for (floorNode of wingNode.floors; track floorNode.floor.id) {
+          <div class="tree-floor" [class.selected]="selectedFloorId === floorNode.floor.id">
+            <header class="tree-row floor-row">
+              <button type="button" class="tree-node"
+                (click)="selectWing(wingNode.wing.id); selectFloor(floorNode.floor.id)">
+                <span class="node-badge node-badge-floor" aria-hidden="true">F</span>
+                <span class="node-text">
+                  <strong>{{ floorNode.floor.name }}</strong>
+                  <small>Level {{ floorNode.floor.floorNumber }} · {{ floorNode.flats.length }} flat(s)</small>
+                </span>
+              </button>
+              <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text"
+                (click)="deactivateFloor(wingNode.wing.id, floorNode.floor.id)">Remove Floor</button>
+            </header>
+
+            <ul class="tree-flats">
+              @for (flat of floorNode.flats; track flat.id) {
+              <li class="tree-row flat-row">
+                <div class="flat-chip">
+                  <span class="node-badge node-badge-flat" aria-hidden="true">#</span>
+                  <span>Flat {{ flat.code }}</span>
+                  @if (flat.typeName) {
+                  <span class="flat-type">{{ flat.typeName }}</span>
+                  }
+                </div>
+                <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text"
+                  (click)="deactivateFlat(wingNode.wing.id, floorNode.floor.id, flat.id)">Remove</button>
+              </li>
+              }
+            </ul>
+          </div>
+          }
+          }
+        </article>
+        }
+      </div>
+      }
+    </section>
+
+    <section class="panel add-panel ui-card">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <span class="panel-icon panel-icon-add" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </span>
+          <div>
+            <h3>Add to structure</h3>
+            <p>Select wing, floor, and flat from the catalog</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-track" aria-label="Configuration steps">
+        <div class="step-item" [class.done]="!!selectedWingId" [class.active]="!selectedWingId">
+          <span class="step-num">1</span>
+          <span>Wing</span>
+        </div>
+        <div class="step-line" [class.done]="!!selectedWingId"></div>
+        <div class="step-item" [class.done]="!!selectedFloorId" [class.active]="!!selectedWingId && !selectedFloorId">
+          <span class="step-num">2</span>
+          <span>Floor</span>
+        </div>
+        <div class="step-line" [class.done]="!!selectedFloorId"></div>
+        <div class="step-item" [class.active]="!!selectedFloorId && !selectedFlatId" [class.done]="!!selectedFlatId">
+          <span class="step-num">3</span>
+          <span>Flat</span>
+        </div>
+      </div>
+
+      <div class="form-block">
+        <label class="ui-label" for="wingSelect">Select wing</label>
+        <select id="wingSelect" class="ui-select" [ngModel]="selectedWingId" (ngModelChange)="onWingSelected($event)">
+          <option [ngValue]="null">Choose a wing...</option>
+          @for (wing of masterWings(); track wing.id) {
+          <option [ngValue]="wing.id">{{ wingLabel(wing) }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-block" [class.form-block-disabled]="!selectedWingId">
+        <label class="ui-label" for="floorSelect">Select floor</label>
+        <select id="floorSelect" class="ui-select" [ngModel]="selectedFloorId"
+          (ngModelChange)="selectFloorContext($event)" [disabled]="!selectedWingId">
+          <option [ngValue]="null">{{ selectedWingId ? 'Choose a floor...' : 'Select a wing first' }}</option>
+          @for (floor of masterFloors(); track floor.id) {
+          <option [ngValue]="floor.id">{{ floorLabel(floor) }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-block" [class.form-block-disabled]="!selectedFloorId">
+        <label class="ui-label" for="flatSelect">Select flat</label>
+        <p class="hint">Each flat number can only be used once per wing.</p>
+        <select id="flatSelect" class="ui-select" [(ngModel)]="selectedFlatId"
+          [disabled]="!selectedWingId || !selectedFloorId">
+          <option [ngValue]="null">
+            @if (!selectedFloorId) {
+            Select a floor first
+            } @else if (availableFlatsForMapping().length === 0) {
+            No flats available for this wing
+            } @else {
+            Choose a flat...
+            }
+          </option>
+          @for (flat of availableFlatsForMapping(); track flat.id) {
+          <option [ngValue]="flat.id">{{ flatLabel(flat) }}</option>
+          }
+        </select>
+      </div>
+
+      <button type="button" class="ui-btn ui-btn-primary ui-btn-block"
+        [disabled]="!selectedWingId || !selectedFloorId || !selectedFlatId || savingMapping" (click)="addMapping()">
+        {{ savingMapping ? 'Adding flat...' : 'Add Flat' }}
       </button>
     </section>
-
-    <section class="panel filters-panel ui-card">
-      <div class="search-wrap">
-        <span class="search-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-          </svg>
-        </span>
-        <input
-          id="searchSociety"
-          class="ui-input control-search"
-          type="search"
-          [(ngModel)]="searchTerm"
-          (keyup.enter)="loadSocieties()"
-          placeholder="Search by society name or location..."
-          aria-label="Search societies" />
-      </div>
-      <button type="button" class="ui-btn ui-btn-secondary" (click)="loadSocieties()">Search</button>
-    </section>
-
-    <section class="panel table-panel ui-card">
-      <div class="table-toolbar">
-        <h2>Societies</h2>
-        <span class="table-count">{{ societies().length }} total</span>
-      </div>
-      <div class="table-wrap">
-        <table class="data-table ui-table">
-          <thead>
-            <tr>
-              <th scope="col">Society</th>
-              <th scope="col">Location</th>
-              <th scope="col">Wings</th>
-              <th scope="col">Floors</th>
-              <th scope="col">Flats</th>
-              <th scope="col">Status</th>
-              <th scope="col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (societies().length === 0) {
-              <tr>
-                <td colspan="7">
-                  <div class="ui-empty empty-state-table">
-                    <div class="ui-empty-icon" aria-hidden="true">🏢</div>
-                    <h4>No societies yet</h4>
-                    <p>Create your first society to begin configuration.</p>
-                    <button type="button" class="ui-btn ui-btn-primary" (click)="openCreateSociety()">Create Society</button>
-                  </div>
-                </td>
-              </tr>
-            } @else {
-              @for (society of societies(); track society.id) {
-                <tr class="table-row">
-                  <td data-label="Society">
-                    <div class="society-cell">
-                      <span class="society-avatar" aria-hidden="true">{{ society.name.charAt(0) }}</span>
-                      <div>
-                        <strong>{{ society.name }}</strong>
-                        <span class="subtext">{{ society.code }}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="muted-cell" data-label="Location">{{ society.location || '—' }}</td>
-                  <td data-label="Wings"><span class="metric-pill">{{ society.wingCount }}</span></td>
-                  <td data-label="Floors"><span class="metric-pill">{{ society.floorCount }}</span></td>
-                  <td data-label="Flats"><span class="metric-pill">{{ society.flatCount }}</span></td>
-                  <td data-label="Status">
-                    <span class="status-badge" [class.is-active]="society.isConfigured">
-                      {{ society.isConfigured ? 'Configured' : 'Draft' }}
-                    </span>
-                  </td>
-                  <td class="actions-cell" data-label="Actions">
-                    <button type="button" class="ui-btn ui-btn-secondary action-chip" (click)="configureSociety(society)">Configure</button>
-                    <button type="button" class="ui-btn ui-btn-ghost action-chip" (click)="openEditSociety(society)">Edit</button>
-                    <button type="button" class="ui-btn ui-btn-danger action-chip" (click)="deleteSociety(society)">Delete</button>
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
-    </section>
-  } @else {
-    @if (structure(); as current) {
-      <nav class="ui-breadcrumb" aria-label="Breadcrumb">
-        <button type="button" (click)="backToList()">Dashboard</button>
-        <span class="ui-breadcrumb-sep" aria-hidden="true">›</span>
-        <span aria-current="page">Society Configuration</span>
-        <span class="ui-breadcrumb-sep" aria-hidden="true">›</span>
-        <span>{{ current.society.name }}</span>
-      </nav>
-
-      <section class="configure-hero">
-        <button type="button" class="ui-btn ui-btn-ghost back-btn" (click)="backToList()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Back
-        </button>
-        <div class="configure-hero-main">
-          <div>
-            <span class="ui-eyebrow">Society setup</span>
-            <h1 class="ui-title">{{ current.society.name }}</h1>
-            <p class="location-line">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              {{ current.society.location || 'Location not set' }}
-            </p>
-          </div>
-          <button type="button" class="ui-btn ui-btn-primary" (click)="openGenerateModal()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg>
-            Generate Structure
-          </button>
-        </div>
-      </section>
-
-      <div class="stats-row">
-        <article class="stat-card ui-card">
-          <span class="stat-label">Wings</span>
-          <strong class="stat-value">{{ current.society.wingCount }}</strong>
-        </article>
-        <article class="stat-card ui-card">
-          <span class="stat-label">Floors</span>
-          <strong class="stat-value">{{ current.society.floorCount }}</strong>
-        </article>
-        <article class="stat-card ui-card">
-          <span class="stat-label">Flats</span>
-          <strong class="stat-value">{{ current.society.flatCount }}</strong>
-        </article>
-      </div>
-
-      <div class="configure-grid">
-        <section class="panel tree-panel ui-card">
-          <div class="panel-header">
-            <div class="panel-title-wrap">
-              <span class="panel-icon panel-icon-tree" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-              </span>
-              <div>
-                <h3>Structure</h3>
-                <p>Wings, floors, and flats configured for this society</p>
-              </div>
-            </div>
-          </div>
-
-          @if (current.wings.length === 0) {
-            <div class="ui-empty">
-              <div class="ui-empty-icon" aria-hidden="true">📋</div>
-              <h4>No structure configured</h4>
-              <p>This society does not have any wings configured yet. Add a wing manually or generate the full structure.</p>
-              <button type="button" class="ui-btn ui-btn-primary" (click)="openGenerateModal()">Generate Structure</button>
-            </div>
-          } @else {
-            <div class="tree" role="tree" aria-label="Society structure">
-              @for (wingNode of current.wings; track wingNode.wing.id) {
-                <article class="tree-wing" [class.selected]="selectedWingId === wingNode.wing.id" role="treeitem" [attr.aria-expanded]="isWingExpanded(wingNode.wing.id)">
-                  <header class="tree-row wing-row">
-                    <button type="button" class="tree-toggle" (click)="toggleWingExpanded(wingNode.wing.id)" [attr.aria-label]="isWingExpanded(wingNode.wing.id) ? 'Collapse wing' : 'Expand wing'">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.is-expanded]="isWingExpanded(wingNode.wing.id)"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                    <button type="button" class="tree-node" (click)="selectWing(wingNode.wing.id)">
-                      <span class="node-badge node-badge-wing" aria-hidden="true">W</span>
-                      <span class="node-text">
-                        <strong>{{ wingNode.wing.name }}</strong>
-                        <small>{{ wingNode.floors.length }} floor(s) · {{ wingNode.wing.flatCount }} flat(s)</small>
-                      </span>
-                    </button>
-                    <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text" (click)="deactivateWing(wingNode.wing.id)">Remove Wing</button>
-                  </header>
-
-                  @if (isWingExpanded(wingNode.wing.id)) {
-                    @for (floorNode of wingNode.floors; track floorNode.floor.id) {
-                      <div class="tree-floor" [class.selected]="selectedFloorId === floorNode.floor.id">
-                        <header class="tree-row floor-row">
-                          <button type="button" class="tree-node" (click)="selectWing(wingNode.wing.id); selectFloor(floorNode.floor.id)">
-                            <span class="node-badge node-badge-floor" aria-hidden="true">F</span>
-                            <span class="node-text">
-                              <strong>{{ floorNode.floor.name }}</strong>
-                              <small>Level {{ floorNode.floor.floorNumber }} · {{ floorNode.flats.length }} flat(s)</small>
-                            </span>
-                          </button>
-                          <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text" (click)="deactivateFloor(wingNode.wing.id, floorNode.floor.id)">Remove Floor</button>
-                        </header>
-
-                        <ul class="tree-flats">
-                          @for (flat of floorNode.flats; track flat.id) {
-                            <li class="tree-row flat-row">
-                              <div class="flat-chip">
-                                <span class="node-badge node-badge-flat" aria-hidden="true">#</span>
-                                <span>Flat {{ flat.code }}</span>
-                                @if (flat.typeName) {
-                                  <span class="flat-type">{{ flat.typeName }}</span>
-                                }
-                              </div>
-                              <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text" (click)="deactivateFlat(wingNode.wing.id, floorNode.floor.id, flat.id)">Remove</button>
-                            </li>
-                          }
-                        </ul>
-                      </div>
-                    }
-                  }
-                </article>
-              }
-            </div>
-          }
-        </section>
-
-        <section class="panel add-panel ui-card">
-          <div class="panel-header">
-            <div class="panel-title-wrap">
-              <span class="panel-icon panel-icon-add" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-              </span>
-              <div>
-                <h3>Add to structure</h3>
-                <p>Select wing, floor, and flat from the catalog</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="step-track" aria-label="Configuration steps">
-            <div class="step-item" [class.done]="!!selectedWingId" [class.active]="!selectedWingId">
-              <span class="step-num">1</span>
-              <span>Wing</span>
-            </div>
-            <div class="step-line" [class.done]="!!selectedWingId"></div>
-            <div class="step-item" [class.done]="!!selectedFloorId" [class.active]="!!selectedWingId && !selectedFloorId">
-              <span class="step-num">2</span>
-              <span>Floor</span>
-            </div>
-            <div class="step-line" [class.done]="!!selectedFloorId"></div>
-            <div class="step-item" [class.active]="!!selectedFloorId && !selectedFlatId" [class.done]="!!selectedFlatId">
-              <span class="step-num">3</span>
-              <span>Flat</span>
-            </div>
-          </div>
-
-          <div class="form-block">
-            <label class="ui-label" for="wingSelect">Select wing</label>
-            <select id="wingSelect" class="ui-select" [ngModel]="selectedWingId" (ngModelChange)="onWingSelected($event)">
-              <option [ngValue]="null">Choose a wing...</option>
-              @for (wing of masterWings(); track wing.id) {
-                <option [ngValue]="wing.id">{{ wingLabel(wing) }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-block" [class.form-block-disabled]="!selectedWingId">
-            <label class="ui-label" for="floorSelect">Select floor</label>
-            <select id="floorSelect" class="ui-select" [ngModel]="selectedFloorId" (ngModelChange)="selectFloorContext($event)" [disabled]="!selectedWingId">
-              <option [ngValue]="null">{{ selectedWingId ? 'Choose a floor...' : 'Select a wing first' }}</option>
-              @for (floor of masterFloors(); track floor.id) {
-                <option [ngValue]="floor.id">{{ floorLabel(floor) }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-block" [class.form-block-disabled]="!selectedFloorId">
-            <label class="ui-label" for="flatSelect">Select flat</label>
-            <p class="hint">Each flat number can only be used once per wing.</p>
-            <select id="flatSelect" class="ui-select" [(ngModel)]="selectedFlatId" [disabled]="!selectedWingId || !selectedFloorId">
-              <option [ngValue]="null">
-                @if (!selectedFloorId) {
-                  Select a floor first
-                } @else if (availableFlatsForMapping().length === 0) {
-                  No flats available for this wing
-                } @else {
-                  Choose a flat...
-                }
-              </option>
-              @for (flat of availableFlatsForMapping(); track flat.id) {
-                <option [ngValue]="flat.id">{{ flatLabel(flat) }}</option>
-              }
-            </select>
-          </div>
-
-          <button
-            type="button"
-            class="ui-btn ui-btn-primary ui-btn-block"
-            [disabled]="!selectedWingId || !selectedFloorId || !selectedFlatId || savingMapping"
-            (click)="addMapping()">
-            {{ savingMapping ? 'Adding flat...' : 'Add Flat' }}
-          </button>
-        </section>
-      </div>
-    }
+  </div>
+  }
   }
 
   @if (showSocietyModal) {
-    <div class="modal-backdrop" role="presentation" (click)="showSocietyModal = false">
-      <div class="modal ui-card" role="dialog" aria-modal="true" [attr.aria-labelledby]="editingSociety ? 'editSocietyTitle' : 'createSocietyTitle'" (click)="$event.stopPropagation()">
-        <div class="modal-head">
-          <h3 [id]="editingSociety ? 'editSocietyTitle' : 'createSocietyTitle'">{{ editingSociety ? 'Edit Society' : 'Create Society' }}</h3>
-          <p>Enter the society name and location.</p>
-        </div>
-        <div class="field">
-          <label class="ui-label" for="societyName">Society name <span class="required" aria-hidden="true">*</span></label>
-          <input id="societyName" class="ui-input" type="text" [(ngModel)]="societyForm.name" placeholder="e.g. Golden Park Society" required />
-        </div>
-        <div class="field">
-          <label class="ui-label" for="societyLocation">Location</label>
-          <input id="societyLocation" class="ui-input" type="text" [(ngModel)]="societyForm.location" placeholder="City, state" />
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="ui-btn ui-btn-secondary" (click)="showSocietyModal = false">Cancel</button>
-          <button type="button" class="ui-btn ui-btn-primary" [disabled]="savingSociety" (click)="saveSociety()">
-            {{ savingSociety ? 'Saving...' : (editingSociety ? 'Update Society' : 'Create Society') }}
-          </button>
-        </div>
+  <div class="modal-backdrop" role="presentation" (click)="showSocietyModal = false">
+    <div class="modal ui-card" role="dialog" aria-modal="true"
+      [attr.aria-labelledby]="editingSociety ? 'editSocietyTitle' : 'createSocietyTitle'"
+      (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3 [id]="editingSociety ? 'editSocietyTitle' : 'createSocietyTitle'">{{ editingSociety ? 'Edit Society' :
+          'Create Society' }}</h3>
+        <p>Enter the society name and location.</p>
+      </div>
+      <div class="field">
+        <label class="ui-label" for="societyName">Society name <span class="required"
+            aria-hidden="true">*</span></label>
+        <input id="societyName" class="ui-input" type="text" [(ngModel)]="societyForm.name"
+          placeholder="e.g. Golden Park Society" required />
+      </div>
+      <div class="field">
+        <label class="ui-label" for="societyLocation">Location</label>
+        <input id="societyLocation" class="ui-input" type="text" [(ngModel)]="societyForm.location"
+          placeholder="City, state" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="ui-btn ui-btn-secondary" (click)="showSocietyModal = false">Cancel</button>
+        <button type="button" class="ui-btn ui-btn-primary" [disabled]="savingSociety" (click)="saveSociety()">
+          {{ savingSociety ? 'Saving...' : (editingSociety ? 'Update Society' : 'Create Society') }}
+        </button>
       </div>
     </div>
+  </div>
   }
 
   @if (showGenerateModal) {
-    <div class="modal-backdrop" role="presentation" (click)="closeGenerateModal()">
-      <div class="modal modal-xl ui-card" role="dialog" aria-modal="true" aria-labelledby="generateStructureTitle" (click)="$event.stopPropagation()">
-        <div class="modal-head">
-          <h3 id="generateStructureTitle">Generate Society Structure</h3>
-          <p>Step {{ generateStep }} of 4 — {{ generateSteps[generateStep - 1] }}</p>
+  <div class="modal-backdrop" role="presentation" (click)="closeGenerateModal()">
+    <div class="modal modal-xl ui-card" role="dialog" aria-modal="true" aria-labelledby="generateStructureTitle"
+      (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3 id="generateStructureTitle">Generate Society Structure</h3>
+        <p>Step {{ generateStep }} of 4 — {{ generateSteps[generateStep - 1] }}</p>
+      </div>
+
+      <div class="wizard-steps" aria-hidden="true">
+        @for (step of generateSteps; track step; let i = $index) {
+        <span class="wizard-step" [class.active]="generateStep === i + 1" [class.done]="generateStep > i + 1">{{ i + 1
+          }}</span>
+        }
+      </div>
+
+      @if (generateStep === 1) {
+      <div class="generate-section">
+        <div class="generate-section-head">
+          <h4>Select wings</h4>
+          <label class="select-all">
+            <input type="checkbox" [checked]="generateWingIds.size === masterWings().length"
+              (change)="selectAllGenerate('wings', $any($event.target).checked)" />
+            Select all
+          </label>
         </div>
-
-        <div class="wizard-steps" aria-hidden="true">
-          @for (step of generateSteps; track step; let i = $index) {
-            <span class="wizard-step" [class.active]="generateStep === i + 1" [class.done]="generateStep > i + 1">{{ i + 1 }}</span>
-          }
-        </div>
-
-        @if (generateStep === 1) {
-          <div class="generate-section">
-            <div class="generate-section-head">
-              <h4>Select wings</h4>
-              <label class="select-all">
-                <input type="checkbox" [checked]="generateWingIds.size === masterWings().length" (change)="selectAllGenerate('wings', $any($event.target).checked)" />
-                Select all
-              </label>
-            </div>
-            <div class="checkbox-list">
-              @for (wing of masterWings(); track wing.id) {
-                <label class="checkbox-item">
-                  <input type="checkbox" [checked]="generateWingIds.has(wing.id)" (change)="toggleGenerateId(generateWingIds, wing.id, $any($event.target).checked)" />
-                  <span>{{ wingLabel(wing) }}</span>
-                </label>
-              }
-            </div>
-          </div>
-        }
-
-        @if (generateStep === 2) {
-          <div class="generate-section">
-            <div class="generate-section-head">
-              <h4>Select floors</h4>
-              <label class="select-all">
-                <input type="checkbox" [checked]="generateFloorIds.size === filteredFloorsForGenerate().length && filteredFloorsForGenerate().length > 0" (change)="selectAllGenerate('floors', $any($event.target).checked)" />
-                Select all
-              </label>
-            </div>
-            <div class="checkbox-list">
-              @for (floor of filteredFloorsForGenerate(); track floor.id) {
-                <label class="checkbox-item">
-                  <input type="checkbox" [checked]="generateFloorIds.has(floor.id)" (change)="toggleGenerateId(generateFloorIds, floor.id, $any($event.target).checked)" />
-                  <span>{{ floorLabel(floor) }}</span>
-                </label>
-              }
-            </div>
-          </div>
-        }
-
-        @if (generateStep === 3) {
-          <div class="generate-section">
-            <div class="generate-section-head">
-              <h4>Select flats</h4>
-              <label class="select-all">
-                <input type="checkbox" [checked]="generateFlatIds.size === masterFlats().length" (change)="selectAllGenerate('flats', $any($event.target).checked)" />
-                Select all
-              </label>
-            </div>
-            <div class="checkbox-list checkbox-list-scroll">
-              @for (flat of masterFlats(); track flat.id) {
-                <label class="checkbox-item">
-                  <input type="checkbox" [checked]="generateFlatIds.has(flat.id)" (change)="toggleGenerateId(generateFlatIds, flat.id, $any($event.target).checked)" />
-                  <span>{{ flatLabel(flat) }}</span>
-                </label>
-              }
-            </div>
-          </div>
-        }
-
-        @if (generateStep === 4 && preview(); as p) {
-          <div class="preview-panel">
-            <p class="preview-warning">You are about to configure <strong>{{ generateWingIds.size }}</strong> wing(s), <strong>{{ generateFloorIds.size }}</strong> floor(s), and up to <strong>{{ p.totalMappings }}</strong> flat configuration(s). Existing configurations will be preserved; duplicates will be skipped.</p>
-            <div class="preview-summary">
-              <strong>{{ p.totalMappings }}</strong> new flat(s)
-              <span class="preview-divider">·</span>
-              <span>{{ p.skippedDuplicates }} duplicate(s) skipped</span>
-            </div>
-            <div class="preview-tree">
-              @for (wingNode of p.preview; track wingNode.wing.id) {
-                <div class="preview-wing">{{ wingNode.wing.name }}</div>
-                @for (floorNode of wingNode.floors; track floorNode.floor.id) {
-                  <div class="preview-floor">
-                    <span>{{ floorNode.floor.name }}</span>
-                    <div class="preview-flats">
-                      @for (flat of floorNode.flats; track flat.id) {
-                        <span class="preview-flat">{{ flat.code }}</span>
-                      }
-                    </div>
-                  </div>
-                }
-              }
-            </div>
-          </div>
-        }
-
-        <div class="modal-actions">
-          <button type="button" class="ui-btn ui-btn-secondary" (click)="closeGenerateModal()">Cancel</button>
-          @if (generateStep > 1) {
-            <button type="button" class="ui-btn ui-btn-secondary" (click)="prevGenerateStep()">Back</button>
-          }
-          @if (generateStep < 4) {
-            <button type="button" class="ui-btn ui-btn-primary" (click)="nextGenerateStep()">Next</button>
-          } @else {
-            <button type="button" class="ui-btn ui-btn-primary" [disabled]="!preview() || generating" (click)="confirmGenerate()">
-              {{ generating ? 'Generating...' : 'Generate Structure' }}
-            </button>
+        <div class="checkbox-list">
+          @for (wing of masterWings(); track wing.id) {
+          <label class="checkbox-item">
+            <input type="checkbox" [checked]="generateWingIds.has(wing.id)"
+              (change)="toggleGenerateId(generateWingIds, wing.id, $any($event.target).checked)" />
+            <span>{{ wingLabel(wing) }}</span>
+          </label>
           }
         </div>
       </div>
+      }
+
+      @if (generateStep === 2) {
+      <div class="generate-section">
+        <div class="generate-section-head">
+          <h4>Select floors</h4>
+          <label class="select-all">
+            <input type="checkbox"
+              [checked]="generateFloorIds.size === filteredFloorsForGenerate().length && filteredFloorsForGenerate().length > 0"
+              (change)="selectAllGenerate('floors', $any($event.target).checked)" />
+            Select all
+          </label>
+        </div>
+        <div class="checkbox-list">
+          @for (floor of filteredFloorsForGenerate(); track floor.id) {
+          <label class="checkbox-item">
+            <input type="checkbox" [checked]="generateFloorIds.has(floor.id)"
+              (change)="toggleGenerateId(generateFloorIds, floor.id, $any($event.target).checked)" />
+            <span>{{ floorLabel(floor) }}</span>
+          </label>
+          }
+        </div>
+      </div>
+      }
+
+      @if (generateStep === 3) {
+      <div class="generate-section">
+        <div class="generate-section-head">
+          <h4>Select flats</h4>
+          <label class="select-all">
+            <input type="checkbox" [checked]="generateFlatIds.size === masterFlats().length"
+              (change)="selectAllGenerate('flats', $any($event.target).checked)" />
+            Select all
+          </label>
+        </div>
+        <div class="checkbox-list checkbox-list-scroll">
+          @for (flat of masterFlats(); track flat.id) {
+          <label class="checkbox-item">
+            <input type="checkbox" [checked]="generateFlatIds.has(flat.id)"
+              (change)="toggleGenerateId(generateFlatIds, flat.id, $any($event.target).checked)" />
+            <span>{{ flatLabel(flat) }}</span>
+          </label>
+          }
+        </div>
+      </div>
+      }
+
+      @if (generateStep === 4 && preview(); as p) {
+      <div class="preview-panel">
+        <p class="preview-warning">You are about to configure <strong>{{ generateWingIds.size }}</strong> wing(s),
+          <strong>{{ generateFloorIds.size }}</strong> floor(s), and up to <strong>{{ p.totalMappings }}</strong> flat
+          configuration(s). Existing configurations will be preserved; duplicates will be skipped.</p>
+        <div class="preview-summary">
+          <strong>{{ p.totalMappings }}</strong> new flat(s)
+          <span class="preview-divider">·</span>
+          <span>{{ p.skippedDuplicates }} duplicate(s) skipped</span>
+        </div>
+        <div class="preview-tree">
+          @for (wingNode of p.preview; track wingNode.wing.id) {
+          <div class="preview-wing">{{ wingNode.wing.name }}</div>
+          @for (floorNode of wingNode.floors; track floorNode.floor.id) {
+          <div class="preview-floor">
+            <span>{{ floorNode.floor.name }}</span>
+            <div class="preview-flats">
+              @for (flat of floorNode.flats; track flat.id) {
+              <span class="preview-flat">{{ flat.code }}</span>
+              }
+            </div>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+
+      <div class="modal-actions">
+        <button type="button" class="ui-btn ui-btn-secondary" (click)="closeGenerateModal()">Cancel</button>
+        @if (generateStep > 1) {
+        <button type="button" class="ui-btn ui-btn-secondary" (click)="prevGenerateStep()">Back</button>
+        }
+        @if (generateStep < 4) { <button type="button" class="ui-btn ui-btn-primary" (click)="nextGenerateStep()">
+          Next</button>
+          } @else {
+          <button type="button" class="ui-btn ui-btn-primary" [disabled]="!preview() || generating"
+            (click)="confirmGenerate()">
+            {{ generating ? 'Generating...' : 'Generate Structure' }}
+          </button>
+          }
+      </div>
     </div>
+  </div>
   }
 </div>

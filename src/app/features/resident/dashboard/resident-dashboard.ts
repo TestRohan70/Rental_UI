@@ -16,7 +16,7 @@ export class ResidentDashboard implements OnInit {
   private readonly visitorService = inject(VisitorService);
 
   readonly residentName = this.authService.getUserName() ?? 'Resident';
-  readonly unitLabel = this.authService.getUnitLabel();
+  readonly unitLabel: string | null = null;
 
   readonly requests = signal<VisitorRequest[]>([]);
   readonly loadError = signal(false);
@@ -44,7 +44,7 @@ export class ResidentDashboard implements OnInit {
   }
 
   loadVisitorStats(): void {
-    const residentId = this.authService.getUserId();
+    const residentId = this.authService.getResidentId() ?? this.authService.getUserId();
     if (!residentId) {
       return;
     }

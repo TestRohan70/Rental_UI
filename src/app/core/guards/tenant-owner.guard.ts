@@ -6,11 +6,11 @@ export const tenantOwnerGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isTenantOrOwner()) {
+  if (auth.isResident()) {
     return true;
   }
 
-  if (auth.isSecurityStaff()) {
+  if (auth.isSecurity()) {
     return router.createUrlTree(['/security/gate']);
   }
 

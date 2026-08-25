@@ -54,6 +54,76 @@
   height: 46px;
 }
 
+.inline-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.inline-btn:hover {
+  opacity: 0.9;
+}
+
+.inline-btn:active {
+  transform: translateY(-50%) scale(0.97);
+}
+
+.society-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--success-soft, rgba(16, 185, 129, 0.08));
+  border: 1px solid var(--success-border, rgba(16, 185, 129, 0.25));
+  margin-top: 4px;
+}
+
+.society-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.society-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--success, #10b981);
+}
+
+.society-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.society-code {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.society-summary-bar {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--accent-soft, rgba(99, 102, 241, 0.08));
+  border: 1px solid var(--accent-border, rgba(99, 102, 241, 0.2));
+  font-size: 13px;
+  color: var(--accent-text, #4f46e5);
+}
+
 .role-hint {
   display: flex;
   align-items: center;

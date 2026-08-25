@@ -3,7 +3,7 @@ export interface Resident {
   society?: string;
   wing: string;
   flatNo: number;
-  name: string;
+  userName: string;
   email: string;
   address?: string;
   parking?: boolean;

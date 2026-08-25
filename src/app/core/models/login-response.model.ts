@@ -1,11 +1,12 @@
 export interface LoginResponse {
   token: string;
-  role: string;
   userId: number;
   userName: string;
-  profileRole?: string;
-  wing?: string;
-  flatNo?: number;
+  email?: string;
+  roleId?: number;
+  role: string;
+  societyId?: number;
+  residentId?: number;
 }
 
 export interface LoginRequest {

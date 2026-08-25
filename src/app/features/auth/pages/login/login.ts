@@ -7,6 +7,7 @@ import { ThemeToggle } from '../../../../shared/components/theme-toggle/theme-to
 import { LoaderService } from '../../../../core/services/loader.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LoginRequest } from '../../../../core/models/login-response.model';
+import { AppRoles } from '../../../../core/constants/app-roles.constants';
 
 @Component({
   selector: 'app-login',
@@ -67,7 +68,8 @@ export class Login {
           localStorage.removeItem('rememberMe');
         }
 
-        if (response.role === 'Admin') {
+        const normalizedRole = response.role ? response.role.trim().toUpperCase() : '';
+        if (normalizedRole === AppRoles.SocietyAdmin) {
           sessionStorage.setItem('showPendingPopup', 'true');
         }
 

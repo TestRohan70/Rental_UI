@@ -6,15 +6,15 @@ export const padminGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isPAdmin()) {
+  if (auth.isSuperAdmin()) {
     return true;
   }
 
-  if (auth.isAdmin()) {
+  if (auth.isSocietyAdmin()) {
     return router.createUrlTree(['/admin/dashboard']);
   }
 
-  if (auth.isSecurityStaff()) {
+  if (auth.isSecurity()) {
     return router.createUrlTree(['/security/gate']);
   }
 

@@ -71,6 +71,12 @@ export interface GenerateStructurePreview {
   preview: SocietyWingNode[];
 }
 
+export interface CreateSocietyAdminRequest {
+  userName: string;
+  email: string;
+  password: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SocietyConfigurationService {
   private readonly http = inject(HttpClient);
@@ -140,5 +146,9 @@ export class SocietyConfigurationService {
     return this.http.delete<{ message: string }>(
       `${this.baseUrl}/societies/${societyId}/wings/${wingId}/floors/${floorId}/flats/${flatId}`
     );
+  }
+
+  createSocietyAdmin(societyId: number, payload: CreateSocietyAdminRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/societies/${societyId}/admin`, payload);
   }
 }

@@ -6,19 +6,19 @@ export const residentGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isSecurityStaff()) {
-    return router.createUrlTree(['/security/gate']);
-  }
-
   if (auth.isResident()) {
     return true;
   }
 
-  if (auth.isPAdmin()) {
+  if (auth.isSecurity()) {
+    return router.createUrlTree(['/security/gate']);
+  }
+
+  if (auth.isSuperAdmin()) {
     return router.createUrlTree(['/padmin/society-configuration']);
   }
 
-  if (auth.isAdmin()) {
+  if (auth.isSocietyAdmin()) {
     return router.createUrlTree(['/admin/dashboard']);
   }
 

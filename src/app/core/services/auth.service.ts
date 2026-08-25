@@ -4,15 +4,17 @@ import { Router } from '@angular/router';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginRequest, LoginResponse } from '../models/login-response.model';
+import { AppRoles } from '../constants/app-roles.constants';
 
 type RawLoginResponse = LoginResponse & {
   Token?: string;
-  Role?: string;
-  ProfileRole?: string;
   UserId?: number;
   UserName?: string;
-  Wing?: string;
-  FlatNo?: number;
+  Email?: string;
+  RoleId?: number;
+  Role?: string;
+  SocietyId?: number;
+  ResidentId?: number;
 };
 
 @Injectable({
@@ -38,35 +40,35 @@ export class AuthService {
     localStorage.setItem('token', token);
     localStorage.setItem('role', role);
     localStorage.setItem('userId', String(response.userId));
-    localStorage.setItem('userName', response.userName);
+    localStorage.setItem('userName', response.userName ?? '');
 
-    if (response.profileRole) {
-      localStorage.setItem('profileRole', response.profileRole);
+    if (response.roleId != null) {
+      localStorage.setItem('roleId', String(response.roleId));
     } else {
-      localStorage.removeItem('profileRole');
+      localStorage.removeItem('roleId');
     }
 
-    if (response.wing) {
-      localStorage.setItem('wing', response.wing);
+    if (response.societyId != null) {
+      localStorage.setItem('societyId', String(response.societyId));
     } else {
-      localStorage.removeItem('wing');
+      localStorage.removeItem('societyId');
     }
 
-    if (response.flatNo != null && response.flatNo > 0) {
-      localStorage.setItem('flatNo', String(response.flatNo));
+    if (response.residentId != null) {
+      localStorage.setItem('residentId', String(response.residentId));
     } else {
-      localStorage.removeItem('flatNo');
+      localStorage.removeItem('residentId');
     }
   }
 
   clearSession(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('roleId');
     localStorage.removeItem('userId');
     localStorage.removeItem('userName');
-    localStorage.removeItem('profileRole');
-    localStorage.removeItem('wing');
-    localStorage.removeItem('flatNo');
+    localStorage.removeItem('societyId');
+    localStorage.removeItem('residentId');
     localStorage.removeItem('rememberMe');
     sessionStorage.removeItem('showPendingPopup');
   }
@@ -79,8 +81,9 @@ export class AuthService {
     return localStorage.getItem('role');
   }
 
-  getProfileRole(): string | null {
-    return localStorage.getItem('profileRole');
+  getRoleId(): number | null {
+    const value = localStorage.getItem('roleId');
+    return value ? Number(value) : null;
   }
 
   getUserId(): number | null {
@@ -92,24 +95,14 @@ export class AuthService {
     return localStorage.getItem('userName');
   }
 
-  getWing(): string | null {
-    return localStorage.getItem('wing');
-  }
-
-  getFlatNo(): number | null {
-    const value = localStorage.getItem('flatNo');
+  getSocietyId(): number | null {
+    const value = localStorage.getItem('societyId');
     return value ? Number(value) : null;
   }
 
-  getUnitLabel(): string | null {
-    const wing = this.getWing();
-    const flatNo = this.getFlatNo();
-
-    if (!wing || !flatNo) {
-      return null;
-    }
-
-    return `Wing ${wing} · Flat ${flatNo}`;
+  getResidentId(): number | null {
+    const value = localStorage.getItem('residentId');
+    return value ? Number(value) : null;
   }
 
   isAuthenticated(): boolean {
@@ -117,60 +110,42 @@ export class AuthService {
     return !!token && token.trim().length > 0;
   }
 
-  isAdmin(): boolean {
-    return this.getEffectiveRole() === 'Admin';
+  isSuperAdmin(): boolean {
+    return this.getEffectiveRole() === AppRoles.SuperAdmin;
   }
 
-  isPAdmin(): boolean {
-    return this.getEffectiveRole() === 'pAdmin';
+  isSocietyAdmin(): boolean {
+    return this.getEffectiveRole() === AppRoles.SocietyAdmin;
   }
 
   isResident(): boolean {
-    return this.getEffectiveRole() === 'Resident';
+    return this.getEffectiveRole() === AppRoles.Resident;
   }
 
-  isSecurityStaff(): boolean {
-    return this.isResident() && this.getProfileRole() === 'Security';
+  isSecurity(): boolean {
+    return this.getEffectiveRole() === AppRoles.Security;
   }
 
-  isTenantOrOwner(): boolean {
-    if (!this.isResident()) {
-      return false;
-    }
-
-    const profileRole = this.getProfileRole();
-    if (profileRole === 'Security') {
-      return false;
-    }
-
-    if (profileRole === 'Tenant' || profileRole === 'Owner') {
-      return true;
-    }
-
-    // Older sessions may not have profileRole; treat as tenant/owner unless security.
-    return !profileRole;
-  }
-
-  redirectAfterLogin(response: Pick<LoginResponse, 'role' | 'profileRole'>): void {
+  redirectAfterLogin(response: Pick<LoginResponse, 'role'>): void {
     const role = this.normalizeRole(response.role);
 
-    if (role === 'pAdmin') {
+    if (role === AppRoles.SuperAdmin) {
       void this.router.navigateByUrl('/padmin/society-configuration', { replaceUrl: true });
       return;
     }
 
-    if (role === 'Admin') {
+    if (role === AppRoles.SocietyAdmin) {
       void this.router.navigateByUrl('/admin/dashboard', { replaceUrl: true });
       return;
     }
 
-    if (role === 'Resident') {
-      if (response.profileRole === 'Security') {
-        void this.router.navigateByUrl('/security/gate', { replaceUrl: true });
-        return;
-      }
-
+    if (role === AppRoles.Resident) {
       void this.router.navigateByUrl('/resident/dashboard', { replaceUrl: true });
+      return;
+    }
+
+    if (role === AppRoles.Security) {
+      void this.router.navigateByUrl('/security/gate', { replaceUrl: true });
       return;
     }
 
@@ -189,10 +164,7 @@ export class AuthService {
       return;
     }
 
-    this.redirectAfterLogin({
-      role,
-      profileRole: this.getProfileRole() ?? undefined
-    });
+    this.redirectAfterLogin({ role });
   }
 
   logout(): void {
@@ -204,11 +176,12 @@ export class AuthService {
     return {
       token: response.token ?? response.Token ?? '',
       role: this.normalizeRole(response.role ?? response.Role ?? ''),
+      roleId: response.roleId ?? response.RoleId,
       userId: response.userId ?? response.UserId ?? 0,
       userName: response.userName ?? response.UserName ?? '',
-      profileRole: response.profileRole ?? response.ProfileRole,
-      wing: response.wing ?? response.Wing,
-      flatNo: response.flatNo ?? response.FlatNo
+      email: response.email ?? response.Email,
+      societyId: response.societyId ?? response.SocietyId,
+      residentId: response.residentId ?? response.ResidentId
     };
   }
 
@@ -260,20 +233,6 @@ export class AuthService {
       return '';
     }
 
-    const trimmed = role.trim();
-
-    if (trimmed.toLowerCase() === 'padmin') {
-      return 'pAdmin';
-    }
-
-    if (trimmed.toLowerCase() === 'admin') {
-      return 'Admin';
-    }
-
-    if (trimmed.toLowerCase() === 'resident') {
-      return 'Resident';
-    }
-
-    return trimmed;
+    return role.trim().toUpperCase();
   }
 }

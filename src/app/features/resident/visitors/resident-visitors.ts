@@ -31,14 +31,14 @@ export class ResidentVisitors implements OnInit {
   );
 
   readonly getVisitorPhotoUrl = getVisitorPhotoUrl;
-  readonly unitLabel = this.authService.getUnitLabel();
+  readonly unitLabel: string | null = null;
 
   ngOnInit(): void {
     this.loadRequests();
   }
 
   loadRequests(): void {
-    const residentId = this.authService.getUserId();
+    const residentId = this.authService.getResidentId() ?? this.authService.getUserId();
     if (!residentId) {
       return;
     }
@@ -58,7 +58,7 @@ export class ResidentVisitors implements OnInit {
   }
 
   private processRequest(requestId: number, action: 'approve' | 'reject'): void {
-    const residentId = this.authService.getUserId();
+    const residentId = this.authService.getResidentId() ?? this.authService.getUserId();
     if (!residentId) {
       return;
     }

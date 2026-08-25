@@ -28,6 +28,8 @@ import { LoaderService } from '../../../core/services/loader.service';
 
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 
+import { ActivatedRoute, Router } from '@angular/router';
+
 
 
 @Component({
@@ -49,6 +51,10 @@ export class SocietyConfiguration implements OnInit {
   private readonly service = inject(SocietyConfigurationService);
 
   private readonly confirmDialog = inject(ConfirmDialogService);
+
+  private readonly router = inject(Router);
+
+  private readonly route = inject(ActivatedRoute);
 
   readonly loader = inject(LoaderService);
 
@@ -135,9 +141,23 @@ export class SocietyConfiguration implements OnInit {
 
 
   ngOnInit(): void {
-
     this.loadSocieties();
+    const qId = this.route.snapshot.queryParams['societyId'] ?? this.route.snapshot.queryParams['id'];
+    if (qId) {
+      const id = Number(qId);
+      if (!isNaN(id) && id > 0) {
+        this.selectedSocietyId = id;
+        this.viewMode = 'configure';
+        this.loadMasterData();
+        this.loadStructure();
+      }
+    }
+  }
 
+  navigateToAddSocietyAdmin(): void {
+    if (this.selectedSocietyId) {
+      void this.router.navigate(['/padmin/society-configuration', this.selectedSocietyId, 'add-admin']);
+    }
   }
 
 

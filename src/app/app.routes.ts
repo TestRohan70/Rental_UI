@@ -146,6 +146,11 @@ export const routes: Routes = [
         path: 'society-configuration',
         loadComponent: () =>
           import('./features/padmin/society-configuration/society-configuration').then(m => m.SocietyConfiguration)
+      },
+      {
+        path: 'society-configuration/:societyId/add-admin',
+        loadComponent: () =>
+          import('./features/padmin/add-society-admin/add-society-admin').then(m => m.AddSocietyAdmin)
       }
     ]
   },

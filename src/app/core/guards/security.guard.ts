@@ -6,15 +6,15 @@ export const securityGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isSecurityStaff()) {
+  if (auth.isSecurity()) {
     return true;
   }
 
-  if (auth.isPAdmin()) {
+  if (auth.isSuperAdmin()) {
     return router.createUrlTree(['/padmin/society-configuration']);
   }
 
-  if (auth.isAdmin()) {
+  if (auth.isSocietyAdmin()) {
     return router.createUrlTree(['/admin/dashboard']);
   }
 

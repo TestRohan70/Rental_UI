@@ -106,7 +106,7 @@
           @for (staff of staffList(); track staff.id) {
             <article class="staff-card">
               <div class="staff-card-main">
-                <strong>{{ staff.name }}</strong>
+                <strong>{{ staff.userName }}</strong>
                 <span>{{ staff.email }}</span>
               </div>
               <span class="status-badge" [class.is-active]="staff.status === 'Approved'">

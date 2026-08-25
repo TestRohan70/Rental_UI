@@ -1,0 +1,104 @@
+<div class="add-admin-page page-container">
+  <button type="button" class="ui-btn ui-btn-ghost back-btn" (click)="backToConfiguration()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      aria-hidden="true">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+    Back
+  </button>
+
+  <div class="header-block">
+    <h1 class="ui-title">Add Society Admin</h1>
+    <p class="ui-subtitle">Create an administrator for {{ society()?.name || 'this society' }}</p>
+  </div>
+
+  @if (errorMessage()) {
+  <div class="alert alert-error ui-alert" role="alert">
+    <span class="alert-icon" aria-hidden="true">!</span>
+    {{ errorMessage() }}
+  </div>
+  }
+
+  @if (successMessage()) {
+  <div class="alert alert-success ui-alert" role="status">
+    <span class="alert-icon" aria-hidden="true">✓</span>
+    {{ successMessage() }}
+  </div>
+  }
+
+  <section class="form-card ui-card">
+    <form (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label class="ui-label" for="societyNameDisplay">Society</label>
+        <input id="societyNameDisplay" class="ui-input readonly-input" type="text"
+          [value]="society()?.name || 'Loading...'" readonly tabindex="-1" />
+      </div>
+
+      <div class="field" [class.has-error]="isFieldInvalid('userName')">
+        <label class="ui-label" for="adminUserName">Username <span class="required" aria-hidden="true">*</span></label>
+        <input id="adminUserName" class="ui-input" type="text" [(ngModel)]="form.userName" name="userName"
+          (blur)="markTouched('userName')" placeholder="Enter username" required />
+        @if (getFieldError('userName'); as error) {
+        <p class="field-error">{{ error }}</p>
+        }
+      </div>
+
+      <div class="field" [class.has-error]="isFieldInvalid('email')">
+        <label class="ui-label" for="adminEmail">Email <span class="required" aria-hidden="true">*</span></label>
+        <input id="adminEmail" class="ui-input" type="email" [(ngModel)]="form.email" name="email"
+          (blur)="markTouched('email')" placeholder="Enter email address" required />
+        @if (getFieldError('email'); as error) {
+        <p class="field-error">{{ error }}</p>
+        }
+      </div>
+
+      <div class="field" [class.has-error]="isFieldInvalid('password')">
+        <label class="ui-label" for="adminPassword">Password <span class="required" aria-hidden="true">*</span></label>
+        <div class="password-wrap">
+          <input id="adminPassword" class="ui-input" [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="form.password" name="password" (blur)="markTouched('password')"
+            placeholder="Enter password (min 8 characters)" required />
+          <button type="button" class="password-toggle" (click)="togglePassword()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+        @if (getFieldError('password'); as error) {
+        <p class="field-error">{{ error }}</p>
+        }
+      </div>
+
+      <div class="field" [class.has-error]="isFieldInvalid('confirmPassword')">
+        <label class="ui-label" for="adminConfirmPassword">Confirm Password <span class="required"
+            aria-hidden="true">*</span></label>
+        <div class="password-wrap">
+          <input id="adminConfirmPassword" class="ui-input" [type]="showConfirmPassword ? 'text' : 'password'"
+            [(ngModel)]="form.confirmPassword" name="confirmPassword" (blur)="markTouched('confirmPassword')"
+            placeholder="Confirm password" required />
+          <button type="button" class="password-toggle" (click)="toggleConfirmPassword()"
+            [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+        @if (getFieldError('confirmPassword'); as error) {
+        <p class="field-error">{{ error }}</p>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="ui-btn ui-btn-secondary" (click)="backToConfiguration()" [disabled]="saving">
+          Cancel
+        </button>
+        <button type="submit" class="ui-btn ui-btn-primary" [disabled]="saving">
+          {{ saving ? 'Creating Admin...' : 'Create Admin' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
