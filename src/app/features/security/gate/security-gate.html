@@ -1,18 +1,13 @@
 <div class="gate-page">
-  <section class="stats-row">
-    <div class="stat-card">
-      <span class="stat-label">Awaiting Resident</span>
-      <strong class="stat-value pending">{{ pendingCount() }}</strong>
+  <header class="page-header">
+    <div>
+      <h1>Security Gate Dashboard</h1>
+      <p>Manage gate entries, verify planned visitor OTPs, and monitor active visits</p>
     </div>
-    <div class="stat-card">
-      <span class="stat-label">Ready to Acknowledge</span>
-      <strong class="stat-value approved">{{ approvedCount() }}</strong>
-    </div>
-    <div class="stat-card">
-      <span class="stat-label">Total Active</span>
-      <strong class="stat-value">{{ requests().length }}</strong>
-    </div>
-  </section>
+    <button type="button" class="refresh-btn" (click)="loadAllData()">
+      Refresh Gate Log
+    </button>
+  </header>
 
   @if (errorMessage()) {
     <div class="alert alert-error">{{ errorMessage() }}</div>
@@ -21,204 +16,269 @@
     <div class="alert alert-success">{{ successMessage() }}</div>
   }
 
-  <div class="gate-grid">
-    <section class="panel form-panel">
-      <div class="panel-header">
-        <h3>New Visitor Request</h3>
-        <p>Raise a request for Tenant/Owner approval at the gate</p>
+  <!-- Gate Navigation Tabs -->
+  <nav class="tab-nav">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'unplanned'" (click)="activeTab.set('unplanned')">
+      Unplanned Visitor Entry
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'verify'" (click)="activeTab.set('verify')">
+      Verify Pass OTP & Check-In
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'inside'" (click)="activeTab.set('inside')">
+      Currently Inside
+      <span class="count-badge active-count">{{ currentlyInside().length }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">
+      Society Visitor Log
+    </button>
+  </nav>
+
+  <!-- TAB 1: Unplanned Visitor Entry -->
+  @if (activeTab() === 'unplanned') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>Unplanned Entry Form</h2>
       </div>
+      <p class="section-desc">Log visitor details at the gate. Request will be submitted to the flat resident for approval prior to check-in.</p>
 
-      <form class="gate-form" (ngSubmit)="submitRequest()" novalidate>
-        <div class="field">
-          <label for="visitorName">Visitor Name</label>
-          <input id="visitorName" class="gate-control" type="text" [(ngModel)]="form.visitorName" name="visitorName" placeholder="Full name of visitor" required />
+      <form (ngSubmit)="submitUnplannedRequest()" class="form-grid">
+        <div class="form-group">
+          <label>Wing *</label>
+          <select [(ngModel)]="form.wingId" name="wingId" (change)="onWingChange()" required>
+            <option [ngValue]="null">Select Wing</option>
+            @for (w of wings(); track w.id) {
+              <option [ngValue]="w.id">{{ w.name }}</option>
+            }
+          </select>
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="visitorPhone">Phone</label>
-            <input id="visitorPhone" class="gate-control" type="text" [(ngModel)]="form.visitorPhone" name="visitorPhone" placeholder="Optional" />
-          </div>
-          <div class="field">
-            <label for="purpose">Purpose</label>
-            <input id="purpose" class="gate-control" type="text" [(ngModel)]="form.purpose" name="purpose" placeholder="Delivery, guest, etc." />
-          </div>
+        <div class="form-group">
+          <label>Floor *</label>
+          <select [(ngModel)]="form.floorId" name="floorId" (change)="onFloorChange()" [disabled]="!form.wingId || floors().length === 0" required>
+            <option [ngValue]="null">Select Floor</option>
+            @for (f of floors(); track f.id) {
+              <option [ngValue]="f.id">{{ f.name }} (Floor {{ f.floorNumber }})</option>
+            }
+          </select>
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="wing">Wing</label>
-            <select id="wing" class="gate-control gate-select" [(ngModel)]="form.wing" name="wing" (change)="onUnitChange()" required>
-              <option value="" disabled selected>Select wing</option>
-              @for (wing of wingOptions; track wing) {
-                <option [value]="wing">Wing {{ wing }}</option>
-              }
-            </select>
-          </div>
-          <div class="field">
-            <label for="flatNo">Flat No.</label>
-            <input id="flatNo" class="gate-control" type="number" [(ngModel)]="form.flatNo" name="flatNo" (blur)="onUnitChange()" placeholder="e.g. 101" min="1" required />
-          </div>
+        <div class="form-group">
+          <label>Flat *</label>
+          <select [(ngModel)]="form.flatId" name="flatId" (change)="onFlatChange()" [disabled]="!form.floorId || flats().length === 0" required>
+            <option [ngValue]="null">Select Flat</option>
+            @for (fl of flats(); track fl.id) {
+              <option [ngValue]="fl.id">Flat {{ fl.code }}</option>
+            }
+          </select>
         </div>
 
         @if (residentPreview()) {
-          <div class="resident-preview" [class.is-error]="!residentPreview().includes(' · ')">
-            {{ residentPreview() }}
+          <div class="unit-preview grid-full">
+            Resident Lookup: <strong>{{ residentPreview() }}</strong>
           </div>
         }
 
-        <div class="field photo-field">
-          <label for="visitorPhoto">Visitor Photo</label>
-          <p class="field-hint">Optional — helps the resident verify who is at the gate</p>
-
-          @if (photoPreviewUrl) {
-            <div class="photo-preview">
-              <img [src]="photoPreviewUrl" alt="Visitor preview" />
-              <div class="photo-preview-actions">
-                <button type="button" class="source-btn camera" (click)="openCamera()">Retake with Camera</button>
-                <button type="button" class="remove-photo-btn" (click)="clearPhoto()">Remove photo</button>
-              </div>
-            </div>
-          } @else {
-            <button type="button" class="photo-source-btn camera single" (click)="openCamera()">
-              <span class="source-icon camera-icon" aria-hidden="true"></span>
-              <span class="source-label">Take Photo with Camera</span>
-              <span class="source-note">Live capture at the gate</span>
-            </button>
-          }
+        <div class="form-group">
+          <label>Visitor Name *</label>
+          <input type="text" [(ngModel)]="form.visitorName" name="visitorName" placeholder="Full name" required />
         </div>
 
-        @if (showCamera()) {
-          <div class="camera-overlay" (click)="closeCamera()">
-            <div class="camera-modal" (click)="$event.stopPropagation()">
-              <div class="camera-modal-header">
-                <h4>Take Visitor Photo</h4>
-                <button type="button" class="camera-close-btn" (click)="closeCamera()" aria-label="Close camera">×</button>
-              </div>
+        <div class="form-group">
+          <label>Visitor Phone</label>
+          <input type="tel" [(ngModel)]="form.visitorPhone" name="visitorPhone" placeholder="Mobile number" />
+        </div>
 
-              <div class="camera-viewport">
-                @if (cameraStarting()) {
-                  <div class="camera-loading">Starting camera...</div>
-                }
-                <video #cameraVideo class="camera-video" autoplay playsinline muted></video>
-              </div>
+        <div class="form-group grid-full">
+          <label>Purpose</label>
+          <input type="text" [(ngModel)]="form.purpose" name="purpose" placeholder="e.g. Delivery / Repair / Personal" />
+        </div>
 
-              <div class="camera-actions">
-                <button type="button" class="ghost-btn" (click)="closeCamera()">Cancel</button>
-                <button type="button" class="capture-btn" [disabled]="cameraStarting()" (click)="captureFromCamera()">
-                  Capture Photo
-                </button>
+        <!-- Visitor Photo Capture -->
+        <div class="photo-section grid-full">
+          <label>Visitor Photo (Optional)</label>
+          <div class="photo-controls">
+            @if (photoPreviewUrl) {
+              <div class="photo-preview-wrap">
+                <img [src]="photoPreviewUrl" alt="Visitor preview" class="photo-preview" />
+                <button type="button" class="remove-photo-btn" (click)="clearPhoto()">&times;</button>
               </div>
-            </div>
+            } @else {
+              <button type="button" class="cam-btn" (click)="openCamera()">
+                Capture Photo
+              </button>
+              <label class="file-upload-btn">
+                Upload Image
+                <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onFileSelected($event)" hidden />
+              </label>
+            }
           </div>
-        }
+        </div>
 
-        <button type="submit" class="primary-btn" [disabled]="loader.isVisible()">
-          Send Approval Request
-        </button>
+        <div class="form-actions grid-full">
+          <button type="submit" class="submit-btn" [disabled]="loader.isVisible()">
+            Send Request to Resident
+          </button>
+        </div>
       </form>
     </section>
 
-    <div class="gate-right-column">
-    <section class="panel queue-panel">
-      <div class="panel-header">
-        <div>
-          <h3>Gate Request Queue</h3>
-          <p>Track pending and approved visitors awaiting action</p>
+    <!-- Camera Modal -->
+    @if (showCamera()) {
+      <div class="modal-overlay">
+        <div class="modal-card camera-modal">
+          <div class="pass-header">
+            <h3>Gate Camera Capture</h3>
+            <button class="close-btn" (click)="closeCamera()">&times;</button>
+          </div>
+          <div class="camera-wrap">
+            <video #cameraVideo autoplay playsinline muted></video>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="snap-btn" (click)="captureFromCamera()">Take Snap</button>
+            <button type="button" class="cancel-btn" (click)="closeCamera()">Cancel</button>
+          </div>
         </div>
-        <button type="button" class="ghost-btn" (click)="loadRequests()">Refresh</button>
       </div>
+    }
+  }
 
-      <div class="filter-tabs">
-        <button type="button" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">All</button>
-        <button type="button" [class.active]="activeFilter() === 'Pending'" (click)="setFilter('Pending')">Pending</button>
-        <button type="button" [class.active]="activeFilter() === 'Approved'" (click)="setFilter('Approved')">Approved</button>
+  <!-- TAB 2: Verify Pass OTP & Check-In -->
+  @if (activeTab() === 'verify') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>Verify 6-Digit Planned Visitor OTP</h2>
       </div>
+      <p class="section-desc">Verify pre-approved visitor pass OTP presented by visitor at the gate.</p>
 
-      @if (filteredRequests().length === 0) {
-        <div class="empty-state">
-          <p>No visitor requests in this view.</p>
-        </div>
-      } @else {
-        <ul class="request-list">
-          @for (request of filteredRequests(); track request.id) {
-            <li class="request-card">
-              @if (getVisitorPhotoUrl(request.visitorPhotoUrl); as photoUrl) {
-                <img class="request-photo" [src]="photoUrl" [alt]="request.visitorName" />
+      <form (ngSubmit)="verifyOtp()" class="otp-verification-card">
+        <div class="form-group">
+          <label>Select Planned Request</label>
+          <select [(ngModel)]="otpForm.visitorRequestId" name="visitorRequestId" required>
+            <option [ngValue]="null">-- Select Planned Visitor --</option>
+            @for (req of requests(); track req.id) {
+              @if (req.visitType === 'PLANNED' && (req.statusCode === 'APPROVED' || req.statusCode === 'PENDING') && !req.checkInDateTime) {
+                <option [value]="req.id">{{ req.visitorName }} (Wing {{ req.wing }} - Flat {{ req.flatNo }})</option>
               }
-              <div class="request-main">
-                <div class="request-title-row">
-                  <strong>{{ request.visitorName }}</strong>
-                  <span class="status-badge" [class]="statusClass(request.status)">{{ request.status }}</span>
-                </div>
-                <p class="request-meta">
-                  Wing {{ request.wing }} · Flat {{ request.flatNo }} · {{ request.residentName }}
-                </p>
-                @if (request.purpose) {
-                  <p class="request-purpose">{{ request.purpose }}</p>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Enter 6-Digit Pass OTP *</label>
+          <input type="text" [(ngModel)]="otpForm.otp" name="otp" placeholder="e.g. 482913" maxlength="6" class="otp-input" required />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="verify-btn" [disabled]="loader.isVisible()">
+            Verify OTP
+          </button>
+        </div>
+      </form>
+
+      @if (otpVerifiedSuccess() && otpVerifiedRequestId(); as reqId) {
+        <div class="verified-box">
+          <h3>OTP Verified Cleanly!</h3>
+          <p>Pass verified for request #{{ reqId }}. Click below to perform physical gate check-in.</p>
+          <button type="button" class="checkin-btn" (click)="checkIn(reqId)">Perform Gate Check-In</button>
+        </div>
+      }
+
+      <div class="divider"></div>
+
+      <!-- Approved Gate Requests ready for check-in -->
+      <h3>Approved Gate Visitors (Ready for Check-In)</h3>
+      <ul class="visitor-list margin-top">
+        @for (req of requests(); track req.id) {
+          @if (req.statusCode === 'APPROVED' && !req.checkInDateTime) {
+            <li class="visitor-card">
+              @if (getVisitorPhotoUrl(req.visitorPhotoUrl); as photoUrl) {
+                <img class="visitor-photo" [src]="photoUrl" [alt]="req.visitorName" />
+              }
+              <div class="visitor-info">
+                <strong>{{ req.visitorName }}</strong>
+                <span class="meta">Type: {{ req.visitType }} · Wing {{ req.wing }} Flat {{ req.flatNo }}</span>
+                <span class="meta">Resident: {{ req.residentName }}</span>
+                @if (req.otpVerifiedAt) {
+                  <span class="meta text-success">OTP Verified: {{ req.otpVerifiedAt | date:'shortTime' }}</span>
                 }
-                <span class="request-time">{{ request.createdDate | date:'short' }}</span>
               </div>
+              <div class="actions">
+                <button type="button" class="checkin-btn" (click)="checkIn(req.id)">Check In</button>
+              </div>
+            </li>
+          }
+        }
+      </ul>
+    </section>
+  }
 
-              @if (request.status === 'Approved') {
-                <button type="button" class="ack-btn" [disabled]="loader.isVisible()" (click)="acknowledge(request)">
-                  Acknowledge Entry
-                </button>
+  <!-- TAB 3: Currently Inside -->
+  @if (activeTab() === 'inside') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>Active Visitors Currently Inside</h2>
+        <span class="count-badge active-count">{{ currentlyInside().length }}</span>
+      </div>
+
+      @if (currentlyInside().length === 0) {
+        <div class="empty-state">No visitors currently inside society grounds.</div>
+      } @else {
+        <ul class="visitor-list">
+          @for (req of currentlyInside(); track req.id) {
+            <li class="visitor-card">
+              @if (getVisitorPhotoUrl(req.visitorPhotoUrl); as photoUrl) {
+                <img class="visitor-photo" [src]="photoUrl" [alt]="req.visitorName" />
               }
+              <div class="visitor-info">
+                <strong>{{ req.visitorName }}</strong>
+                <span class="meta">Wing {{ req.wing || '-' }} · Flat {{ req.flatNo || '-' }}</span>
+                <span class="meta text-success">Checked In At: {{ req.checkInDateTime | date:'shortTime' }}</span>
+                @if (req.purpose) {
+                  <span class="meta">Purpose: {{ req.purpose }}</span>
+                }
+              </div>
+              <div class="actions">
+                <button type="button" class="checkout-btn" (click)="checkOut(req.id)">Check Out</button>
+              </div>
             </li>
           }
         </ul>
       }
     </section>
+  }
 
-    <section class="panel history-panel">
-      <div class="panel-header">
-        <div>
-          <h3>Request History</h3>
-          <p>Approved entries and rejected requests</p>
-        </div>
+  <!-- TAB 4: Society History Log -->
+  @if (activeTab() === 'history') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>Society Visitor History</h2>
       </div>
 
-      <div class="filter-tabs history-tabs">
-        <button type="button" [class.active]="historyFilter() === 'Approved'" (click)="setHistoryFilter('Approved')">
-          Approved ({{ approvedHistoryCount() }})
-        </button>
-        <button type="button" [class.active]="historyFilter() === 'Rejected'" (click)="setHistoryFilter('Rejected')">
-          Rejected ({{ rejectedHistoryCount() }})
-        </button>
-      </div>
-
-      @if (filteredHistory().length === 0) {
-        <div class="empty-state">
-          <p>No {{ historyFilter() === 'Approved' ? 'approved' : 'rejected' }} requests in history yet.</p>
-        </div>
+      @if (historyRequests().length === 0) {
+        <div class="empty-state">No society visitor logs found.</div>
       } @else {
-        <ul class="request-list history-list">
-          @for (request of filteredHistory(); track request.id) {
-            <li class="request-card history-card">
-              @if (getVisitorPhotoUrl(request.visitorPhotoUrl); as photoUrl) {
-                <img class="request-photo" [src]="photoUrl" [alt]="request.visitorName" />
+        <ul class="visitor-list">
+          @for (req of historyRequests(); track req.id) {
+            <li class="visitor-card">
+              @if (getVisitorPhotoUrl(req.visitorPhotoUrl); as photoUrl) {
+                <img class="visitor-photo" [src]="photoUrl" [alt]="req.visitorName" />
               }
-              <div class="request-main">
-                <div class="request-title-row">
-                  <strong>{{ request.visitorName }}</strong>
-                  <span class="status-badge" [class]="statusClass(request.status)">
-                    {{ request.status === 'Acknowledged' ? 'Approved' : request.status }}
-                  </span>
-                </div>
-                <p class="request-meta">
-                  Wing {{ request.wing }} · Flat {{ request.flatNo }} · {{ request.residentName }}
-                </p>
-                @if (request.purpose) {
-                  <p class="request-purpose">{{ request.purpose }}</p>
+              <div class="visitor-info">
+                <strong>{{ req.visitorName }}</strong>
+                <span class="meta">Type: {{ req.visitType || 'UNPLANNED' }} · Wing {{ req.wing || '-' }} Flat {{ req.flatNo || '-' }}</span>
+                <span class="meta">Resident: {{ req.residentName }}</span>
+                @if (req.checkInDateTime) {
+                  <span class="meta subtle">In: {{ req.checkInDateTime | date:'short' }}</span>
                 }
-                <span class="request-time">{{ historyDate(request) | date:'short' }}</span>
+                @if (req.checkOutDateTime) {
+                  <span class="meta subtle">Out: {{ req.checkOutDateTime | date:'short' }}</span>
+                }
               </div>
+              <span class="status-badge" [class]="statusClass(req.statusCode)">{{ req.statusName || req.statusCode }}</span>
             </li>
           }
         </ul>
       }
     </section>
-    </div>
-  </div>
+  }
 </div>

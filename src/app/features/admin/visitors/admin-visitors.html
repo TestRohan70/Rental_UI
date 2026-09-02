@@ -1,0 +1,85 @@
+<div class="admin-visitors-page">
+  <header class="page-header">
+    <div>
+      <h1>Society Visitor Analytics & Logs</h1>
+      <p>Monitor society-wide visitor activity, gate check-ins, and security records</p>
+    </div>
+    <button type="button" class="refresh-btn" (click)="loadData()">
+      Refresh Logs
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  <nav class="tab-nav">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">
+      All Visitor Logs
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'inside'" (click)="activeTab.set('inside')">
+      Currently Inside
+      <span class="count-badge">{{ insideVisitors().length }}</span>
+    </button>
+  </nav>
+
+  @if (activeTab() === 'history') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>Society Visitor History</h2>
+      </div>
+
+      @if (historyRequests().length === 0) {
+        <div class="empty-state">No visitor logs recorded for this society yet.</div>
+      } @else {
+        <ul class="visitor-list">
+          @for (req of historyRequests(); track req.id) {
+            <li class="visitor-card">
+              @if (getVisitorPhotoUrl(req.visitorPhotoUrl); as photoUrl) {
+                <img class="visitor-photo" [src]="photoUrl" [alt]="req.visitorName" />
+              }
+              <div class="visitor-info">
+                <strong>{{ req.visitorName }}</strong>
+                <span class="meta">Type: {{ req.visitType || 'PLANNED' }} · Wing {{ req.wing || '-' }} Flat {{ req.flatNo || '-' }}</span>
+                <span class="meta">Resident: {{ req.residentName }}</span>
+                @if (req.purpose) {
+                  <span class="meta">Purpose: {{ req.purpose }}</span>
+                }
+                <span class="meta subtle">Created: {{ req.createdDate | date:'medium' }}</span>
+              </div>
+              <span class="status-badge" [class]="statusClass(req.statusCode)">{{ req.statusName || req.statusCode }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+  @if (activeTab() === 'inside') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>Active Visitors Currently Inside</h2>
+      </div>
+
+      @if (insideVisitors().length === 0) {
+        <div class="empty-state">No active visitors inside society premises.</div>
+      } @else {
+        <ul class="visitor-list">
+          @for (req of insideVisitors(); track req.id) {
+            <li class="visitor-card">
+              @if (getVisitorPhotoUrl(req.visitorPhotoUrl); as photoUrl) {
+                <img class="visitor-photo" [src]="photoUrl" [alt]="req.visitorName" />
+              }
+              <div class="visitor-info">
+                <strong>{{ req.visitorName }}</strong>
+                <span class="meta">Wing {{ req.wing || '-' }} Flat {{ req.flatNo || '-' }} · Resident: {{ req.residentName }}</span>
+                <span class="meta text-success">Check-in: {{ req.checkInDateTime | date:'shortTime' }}</span>
+              </div>
+              <span class="status-badge status-checkedin">INSIDE</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

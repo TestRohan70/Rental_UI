@@ -22,13 +22,13 @@ export class ResidentDashboard implements OnInit {
   readonly loadError = signal(false);
 
   readonly pendingApprovals = computed(() =>
-    this.requests().filter((item) => item.status?.toLowerCase() === 'pending')
+    this.requests().filter((item) => item.statusCode === 'PENDING' || item.statusName?.toLowerCase() === 'pending')
   );
 
   readonly activeVisitors = computed(() =>
     this.requests().filter((item) => {
-      const status = item.status?.toLowerCase();
-      return status === 'approved' || status === 'acknowledged';
+      const code = item.statusCode?.toUpperCase();
+      return code === 'APPROVED' || code === 'CHECKED_IN';
     })
   );
 
@@ -44,13 +44,8 @@ export class ResidentDashboard implements OnInit {
   }
 
   loadVisitorStats(): void {
-    const residentId = this.authService.getResidentId() ?? this.authService.getUserId();
-    if (!residentId) {
-      return;
-    }
-
     this.loadError.set(false);
-    this.visitorService.getResidentRequests(residentId).subscribe({
+    this.visitorService.getResidentRequests().subscribe({
       next: (data) => this.requests.set(data),
       error: () => this.loadError.set(true)
     });

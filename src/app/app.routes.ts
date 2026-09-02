@@ -63,7 +63,8 @@ export const routes: Routes = [
       },
       {
         path: 'visitors',
-        ...placeholder('Visitors', 'Track visitor entries, approvals, and gate logs.')
+        loadComponent: () =>
+          import('./features/admin/visitors/admin-visitors').then(m => m.AdminVisitors)
       },
       {
         path: 'maintenance',

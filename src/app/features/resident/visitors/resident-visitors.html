@@ -1,10 +1,12 @@
 <div class="visitors-page">
   <header class="page-header">
     <div>
-      <h1>Visitor Approvals</h1>
-      <p>Approve or reject visitor requests raised by security at the gate</p>
+      <h1>Visitor Management</h1>
+      <p>Schedule planned visitors, share OTP passes, and manage gate approvals</p>
     </div>
-    <button type="button" class="refresh-btn" (click)="loadRequests()">Refresh</button>
+    <button type="button" class="refresh-btn" (click)="loadRequests()">
+      <i class="icon-refresh"></i> Refresh
+    </button>
   </header>
 
   @if (errorMessage()) {
@@ -14,72 +16,166 @@
     <div class="alert alert-success">{{ successMessage() }}</div>
   }
 
-  @if (unitLabel) {
-    <div class="unit-banner">
-      Showing visitor requests for <strong>{{ unitLabel }}</strong>
-    </div>
+  <!-- Navigation Tabs -->
+  <nav class="tab-nav">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'planned'" (click)="activeTab.set('planned')">
+      Pre-Approve Visitor Pass
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'pending'" (click)="activeTab.set('pending')">
+      Pending Gate Approvals
+      @if (pendingRequests().length > 0) {
+        <span class="count-badge">{{ pendingRequests().length }}</span>
+      }
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">
+      My Visitor History
+    </button>
+  </nav>
+
+  <!-- TAB 1: Create Planned Pass -->
+  @if (activeTab() === 'planned') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>Create Planned Visitor Pass</h2>
+      </div>
+      <p class="section-desc">
+        Pre-approve expected visitors (family, friends, delivery). A single-use 6-digit OTP will be generated for gate verification.
+      </p>
+
+      <form (ngSubmit)="createPlannedPass()" class="form-grid">
+        <div class="form-group">
+          <label for="visitorName">Visitor Name *</label>
+          <input id="visitorName" type="text" [(ngModel)]="plannedForm.visitorName" name="visitorName" placeholder="Enter full name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="visitorPhone">Visitor Phone</label>
+          <input id="visitorPhone" type="tel" [(ngModel)]="plannedForm.visitorPhone" name="visitorPhone" placeholder="Mobile number" />
+        </div>
+
+        <div class="form-group">
+          <label for="purpose">Purpose of Visit</label>
+          <input id="purpose" type="text" [(ngModel)]="plannedForm.purpose" name="purpose" placeholder="e.g. Guest / Delivery / Repair" />
+        </div>
+
+        <div class="form-group">
+          <label for="expectedArrival">Expected Arrival Date & Time</label>
+          <input id="expectedArrival" type="datetime-local" [(ngModel)]="plannedForm.expectedArrivalDateTime" name="expectedArrival" />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="submit-btn" [disabled]="loader.isVisible()">
+            Generate 6-Digit Pass OTP
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Pass OTP Modal / Card -->
+    @if (createdPass(); as pass) {
+      <div class="modal-overlay" (click)="closePassModal()">
+        <div class="modal-card pass-card" (click)="$event.stopPropagation()">
+          <div class="pass-header">
+            <h3>Entry Pass Generated</h3>
+            <button class="close-btn" (click)="closePassModal()">&times;</button>
+          </div>
+          <div class="pass-body">
+            <p class="pass-label">SHARE THIS 6-DIGIT OTP WITH VISITOR:</p>
+            <div class="otp-display">{{ pass.otp }}</div>
+            <p class="pass-expiry">Valid until: {{ pass.otpExpiresAt | date:'medium' }}</p>
+            <p class="pass-note">Security guard will enter this code at the gate to verify and grant entry.</p>
+          </div>
+          <div class="pass-footer">
+            <button type="button" class="modal-btn" (click)="closePassModal()">Done</button>
+          </div>
+        </div>
+      </div>
+    }
   }
 
-  <section class="panel">
-    <div class="section-head">
-      <h2>Pending Requests</h2>
-      <span class="count-badge">{{ pendingRequests().length }}</span>
-    </div>
-
-    @if (pendingRequests().length === 0) {
-      <div class="empty-state">
-        <p>No pending visitor requests right now.</p>
-        @if (unitLabel) {
-          <p class="empty-hint">Requests raised by security for {{ unitLabel }} will appear here. If you expected a request, confirm you logged in with the account registered for that flat.</p>
-        }
+  <!-- TAB 2: Pending Gate Approvals -->
+  @if (activeTab() === 'pending') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>Pending Unplanned Requests</h2>
+        <span class="count-badge">{{ pendingRequests().length }}</span>
       </div>
-    } @else {
-      <ul class="visitor-list">
-        @for (request of pendingRequests(); track request.id) {
-          <li class="visitor-card">
-            @if (getVisitorPhotoUrl(request.visitorPhotoUrl); as photoUrl) {
-              <img class="visitor-photo" [src]="photoUrl" [alt]="request.visitorName" />
-            }
-            <div class="visitor-info">
-              <strong>{{ request.visitorName }}</strong>
-              <span class="meta">Wing {{ request.wing }} · Flat {{ request.flatNo }}</span>
-              @if (request.purpose) {
-                <span class="meta">{{ request.purpose }}</span>
-              }
-              @if (request.visitorPhone) {
-                <span class="meta">Phone: {{ request.visitorPhone }}</span>
-              }
-              <span class="meta subtle">Raised by {{ request.securityName }} · {{ request.createdDate | date:'short' }}</span>
-            </div>
-            <div class="actions">
-              <button type="button" class="approve-btn" [disabled]="loader.isVisible()" (click)="approve(request)">Approve</button>
-              <button type="button" class="reject-btn" [disabled]="loader.isVisible()" (click)="reject(request)">Reject</button>
-            </div>
-          </li>
-        }
-      </ul>
-    }
-  </section>
 
-  <section class="panel">
-    <div class="section-head">
-      <h2>Recent History</h2>
-    </div>
+      @if (pendingRequests().length === 0) {
+        <div class="empty-state">
+          <p>No pending visitor requests waiting for approval.</p>
+        </div>
+      } @else {
+        <ul class="visitor-list">
+          @for (request of pendingRequests(); track request.id) {
+            <li class="visitor-card">
+              @if (getVisitorPhotoUrl(request.visitorPhotoUrl); as photoUrl) {
+                <img class="visitor-photo" [src]="photoUrl" [alt]="request.visitorName" />
+              }
+              <div class="visitor-info">
+                <strong>{{ request.visitorName }}</strong>
+                <span class="meta">Unit: Wing {{ request.wing || '-' }} · Flat {{ request.flatNo || '-' }}</span>
+                @if (request.purpose) {
+                  <span class="meta">Purpose: {{ request.purpose }}</span>
+                }
+                @if (request.visitorPhone) {
+                  <span class="meta">Phone: {{ request.visitorPhone }}</span>
+                }
+                <span class="meta subtle">Raised by {{ request.securityUserName || 'Gate Security' }} · {{ request.createdDate | date:'short' }}</span>
+              </div>
+              <div class="actions">
+                <button type="button" class="approve-btn" [disabled]="loader.isVisible()" (click)="approve(request)">Approve</button>
+                <button type="button" class="reject-btn" [disabled]="loader.isVisible()" (click)="reject(request)">Reject</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
 
-    @if (historyRequests().length === 0) {
-      <div class="empty-state">No previous visitor requests yet.</div>
-    } @else {
-      <ul class="visitor-list compact">
-        @for (request of historyRequests(); track request.id) {
-          <li class="history-row">
-            <div>
-              <strong>{{ request.visitorName }}</strong>
-              <span class="meta">Wing {{ request.wing }} · Flat {{ request.flatNo }}</span>
-            </div>
-            <span class="status-badge" [class]="statusClass(request.status)">{{ request.status }}</span>
-          </li>
-        }
-      </ul>
-    }
-  </section>
+  <!-- TAB 3: History & Planned Passes -->
+  @if (activeTab() === 'history') {
+    <section class="panel">
+      <div class="section-head">
+        <h2>My Visitor History</h2>
+      </div>
+
+      @if (requests().length === 0) {
+        <div class="empty-state">No visitor requests or pass records found.</div>
+      } @else {
+        <ul class="visitor-list">
+          @for (request of requests(); track request.id) {
+            <li class="visitor-card">
+              @if (getVisitorPhotoUrl(request.visitorPhotoUrl); as photoUrl) {
+                <img class="visitor-photo" [src]="photoUrl" [alt]="request.visitorName" />
+              }
+              <div class="visitor-info">
+                <strong>{{ request.visitorName }}</strong>
+                <span class="meta">Type: {{ request.visitType || 'PLANNED' }} · Wing {{ request.wing || '-' }} Flat {{ request.flatNo || '-' }}</span>
+                @if (request.purpose) {
+                  <span class="meta">Purpose: {{ request.purpose }}</span>
+                }
+                @if (request.checkInDateTime) {
+                  <span class="meta subtle">In: {{ request.checkInDateTime | date:'short' }}</span>
+                }
+                @if (request.checkOutDateTime) {
+                  <span class="meta subtle">Out: {{ request.checkOutDateTime | date:'short' }}</span>
+                }
+                @if (request.otpVerifiedAt) {
+                  <span class="meta subtle text-success">OTP Verified: {{ request.otpVerifiedAt | date:'short' }}</span>
+                }
+              </div>
+              <div class="status-col">
+                <span class="status-badge" [class]="statusClass(request.statusCode)">{{ request.statusName || request.statusCode }}</span>
+                @if (request.visitType === 'PLANNED' && (request.statusCode === 'APPROVED' || request.statusCode === 'PENDING') && !request.checkInDateTime) {
+                  <button type="button" class="cancel-btn" (click)="cancel(request)">Cancel Pass</button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
 </div>
