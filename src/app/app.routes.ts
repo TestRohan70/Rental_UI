@@ -124,7 +124,8 @@ export const routes: Routes = [
       },
       {
         path: 'notifications',
-        ...placeholder('Notifications', 'System alerts, visitor updates, and maintenance reminders.')
+        loadComponent: () =>
+          import('./features/resident/notifications/resident-notifications').then(m => m.ResidentNotifications)
       },
       {
         path: 'profile',

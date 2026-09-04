@@ -69,6 +69,9 @@
             }
           </span>
           {{ item.label }}
+          @if (item.icon === 'visitors' && pendingVisitorService.pendingCount() > 0) {
+            <span class="nav-badge">{{ pendingVisitorService.pendingCount() }}</span>
+          }
         </a>
       }
     </nav>
@@ -101,6 +104,20 @@
       </div>
       <div class="topbar-actions">
         <app-theme-toggle />
+        <button
+          type="button"
+          class="notification-bell"
+          (click)="openNotifications()"
+          [class.has-pending]="pendingVisitorService.pendingCount() > 0"
+          aria-label="Pending visitor approvals">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          @if (pendingVisitorService.pendingCount() > 0) {
+            <span class="bell-badge">{{ pendingVisitorService.pendingCount() }}</span>
+          }
+        </button>
       </div>
     </header>
 
@@ -108,5 +125,67 @@
       <router-outlet></router-outlet>
     </div>
   </main>
-
 </div>
+
+@if (pendingVisitorService.showApprovalPopup() && pendingVisitorService.pendingCount() > 0) {
+  <div class="modal-backdrop" (click)="closePopup()" role="presentation">
+    <div class="modal-card" role="dialog" aria-labelledby="visitor-approval-title" (click)="$event.stopPropagation()">
+      <button type="button" class="modal-close" (click)="closePopup()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+
+      <div class="modal-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </div>
+
+      <h2 id="visitor-approval-title" class="modal-title">
+        You have {{ pendingVisitorService.pendingCount() }} visitor approval request@if (pendingVisitorService.pendingCount() !== 1) {s}
+      </h2>
+      <p class="modal-subtitle">Review gate requests and approve or reject visitor access</p>
+
+      <ul class="pending-list">
+        @for (req of pendingVisitorService.pendingRequests(); track req.id) {
+          <li class="pending-item">
+            <div class="pending-info">
+              <div class="pending-header">
+                <span class="pending-name">{{ req.visitorName }}</span>
+                <span class="role-badge role-badge--security">Unplanned Gate Request</span>
+              </div>
+              <span class="pending-meta">Wing {{ req.wing || '-' }}, Flat {{ req.flatNo || '-' }}</span>
+              @if (req.purpose) {
+                <span class="pending-email">Purpose: {{ req.purpose }}</span>
+              }
+              <span class="pending-status">Waiting at Gate</span>
+            </div>
+            <div class="action-btns">
+              <button
+                type="button"
+                class="approve-btn"
+                [disabled]="pendingVisitorService.isProcessing(req.id) || loader.isVisible()"
+                (click)="approveVisitor(req.id)">
+                <span>✅</span>
+                <span>Approve</span>
+              </button>
+              <button
+                type="button"
+                class="reject-btn"
+                [disabled]="pendingVisitorService.isProcessing(req.id) || loader.isVisible()"
+                (click)="rejectVisitor(req.id)">
+                <span>❌</span>
+                <span>Reject</span>
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+
+      <button type="button" class="modal-dismiss" (click)="goToVisitorsPage()">Review in Visitors Page</button>
+    </div>
+  </div>
+}
