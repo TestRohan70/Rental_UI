@@ -44,47 +44,66 @@ export class Login {
     this.loader.message.set('Signing in...');
     this.loader.subtitle.set('Please wait while we verify your credentials.');
 
-    this.authService.login(this.loginModel).subscribe({
-      next: (response) => {
-        try {
-          this.authService.saveSession(response);
-        } catch {
-          this.errorMessage.set('Sign-in succeeded but the session could not be saved. Please try again.');
-          this.loader.hide();
-          return;
-        }
+  this.authService.login(this.loginModel).subscribe({
+  next: (response) => {
+    try {
+      this.authService.saveSession(response);
+    } catch {
+      this.errorMessage.set(
+        'Sign-in succeeded but the session could not be saved. Please try again.'
+      );
+      this.loader.hide();
+      return;
+    }
 
-        if (!this.authService.isAuthenticated()) {
-          this.errorMessage.set('Sign-in succeeded but no auth token was saved. Please clear cache and try again.');
-          this.loader.hide();
-          return;
-        }
+    if (!this.authService.isAuthenticated()) {
+      this.errorMessage.set(
+        'Sign-in succeeded but no auth token was saved. Please clear cache and try again.'
+      );
+      this.loader.hide();
+      return;
+    }
 
-        this.loader.hide();
+    this.loader.hide();
 
-        if (this.rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-        } else {
-          localStorage.removeItem('rememberMe');
-        }
+    if (this.rememberMe) {
+      localStorage.setItem('rememberMe', 'true');
+    } else {
+      localStorage.removeItem('rememberMe');
+    }
 
-        const normalizedRole = response.role ? response.role.trim().toUpperCase() : '';
-        if (normalizedRole === AppRoles.SocietyAdmin) {
-          sessionStorage.setItem('showPendingPopup', 'true');
-        }
+    const normalizedRole = response.role
+      ? response.role.trim().toUpperCase()
+      : '';
 
-        this.authService.redirectAfterLogin(response);
-      },
-      error: (error) => {
-        this.loader.hide();
-        if (error.status === 401) {
-          this.errorMessage.set('Invalid username or password. Please try again.');
-        } else if (error.status === 0) {
-          this.errorMessage.set('Cannot connect to server. Please check your network.');
-        } else {
-          this.errorMessage.set('An unexpected error occurred. Please try again later.');
-        }
-      }
-    });
+    if (normalizedRole === AppRoles.SocietyAdmin) {
+      sessionStorage.setItem('showPendingPopup', 'true');
+    }
+
+    this.authService.redirectAfterLogin(response);
+  },
+
+  error: (error) => {
+    this.loader.hide();
+
+    if (error.status === 401) {
+      this.errorMessage.set(
+        error.error?.message ||
+        error.error?.Message ||
+        'Invalid username or password. Please try again.'
+      );
+    } else if (error.status === 0) {
+      this.errorMessage.set(
+        'Cannot connect to server. Please check your network.'
+      );
+    } else {
+      this.errorMessage.set(
+        error.error?.message ||
+        error.error?.Message ||
+        'An unexpected error occurred. Please try again later.'
+      );
+    }
+  }
+});
   }
 }
