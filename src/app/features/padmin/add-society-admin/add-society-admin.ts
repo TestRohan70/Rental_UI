@@ -8,7 +8,7 @@ import { LoaderService } from '../../../core/services/loader.service';
 @Component({
   selector: 'app-add-society-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './add-society-admin.html',
   styleUrl: './add-society-admin.css'
 })
