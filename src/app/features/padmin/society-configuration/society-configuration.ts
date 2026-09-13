@@ -86,6 +86,8 @@ export class SocietyConfiguration implements OnInit {
 
   selectedSocietyId: number | null = null;
 
+  flatSearchTerm = '';
+
 
 
   societyForm = { name: '', location: '' };
@@ -102,9 +104,13 @@ export class SocietyConfiguration implements OnInit {
 
   selectedFloorId: number | null = null;
 
-  selectedFlatId: number | null = null;
+  selectedFlatIds = new Set<number>();
 
   savingMapping = false;
+
+  addMappingProgress = 0;
+
+  addMappingTotal = 0;
 
 
 
@@ -382,7 +388,9 @@ export class SocietyConfiguration implements OnInit {
 
     this.selectedFloorId = null;
 
-    this.selectedFlatId = null;
+    this.selectedFlatIds = new Set<number>();
+
+    this.flatSearchTerm = '';
 
     this.masterFloors.set([]);
 
@@ -418,7 +426,9 @@ export class SocietyConfiguration implements OnInit {
 
     this.selectedFloorId = null;
 
-    this.selectedFlatId = null;
+    this.selectedFlatIds = new Set<number>();
+
+    this.flatSearchTerm = '';
 
 
 
@@ -460,6 +470,10 @@ export class SocietyConfiguration implements OnInit {
 
     this.selectedFloorId = floorId;
 
+    this.selectedFlatIds = new Set<number>();
+
+    this.flatSearchTerm = '';
+
     this.syncSelectedFlat();
 
   }
@@ -470,18 +484,44 @@ export class SocietyConfiguration implements OnInit {
 
     const wingId = this.selectedWingId;
 
-    if (!wingId) {
-
-      return [];
-
-    }
-
-
+    if (!wingId) return [];
 
     const usedFlatIds = this.getMappedFlatIdsForWing(wingId);
 
     return this.masterFlats().filter((f) => !usedFlatIds.has(f.id));
 
+  }
+
+  filteredFlatsForPicker(): FlatItem[] {
+    const term = this.flatSearchTerm.trim().toLowerCase();
+    const available = this.availableFlatsForMapping();
+    if (!term) return available;
+    return available.filter(f => f.code.toLowerCase().includes(term) || (f.typeName?.toLowerCase().includes(term)));
+  }
+
+  toggleFlatId(id: number): void {
+    if (this.selectedFlatIds.has(id)) {
+      this.selectedFlatIds.delete(id);
+    } else {
+      this.selectedFlatIds.add(id);
+    }
+    this.selectedFlatIds = new Set(this.selectedFlatIds); // trigger change detection
+  }
+
+  selectAllFlats(checked: boolean): void {
+    this.selectedFlatIds = checked
+      ? new Set(this.filteredFlatsForPicker().map(f => f.id))
+      : new Set<number>();
+  }
+
+  get allFilteredFlatsSelected(): boolean {
+    const filtered = this.filteredFlatsForPicker();
+    return filtered.length > 0 && filtered.every(f => this.selectedFlatIds.has(f.id));
+  }
+
+  get someFilteredFlatsSelected(): boolean {
+    const filtered = this.filteredFlatsForPicker();
+    return filtered.some(f => this.selectedFlatIds.has(f.id)) && !this.allFilteredFlatsSelected;
   }
 
 
@@ -520,13 +560,9 @@ export class SocietyConfiguration implements OnInit {
 
   private syncSelectedFlat(): void {
 
-    const available = this.availableFlatsForMapping();
+    const available = new Set(this.availableFlatsForMapping().map(f => f.id));
 
-    if (this.selectedFlatId && !available.some((f) => f.id === this.selectedFlatId)) {
-
-      this.selectedFlatId = null;
-
-    }
+    this.selectedFlatIds = new Set([...this.selectedFlatIds].filter(id => available.has(id)));
 
   }
 
@@ -572,55 +608,75 @@ export class SocietyConfiguration implements OnInit {
 
 
 
-  addMapping(): void {
+  addMappings(): void {
 
-    if (!this.selectedSocietyId || !this.selectedWingId || !this.selectedFloorId || !this.selectedFlatId) {
+    if (!this.selectedSocietyId || !this.selectedWingId || !this.selectedFloorId) {
 
-      this.errorMessage.set('Please select a wing, floor, and flat.');
+      this.errorMessage.set('Please select a wing and floor.');
 
       return;
 
     }
 
+    if (this.selectedFlatIds.size === 0) {
 
+      this.errorMessage.set('Please select at least one flat.');
+
+      return;
+
+    }
 
     this.savingMapping = true;
 
+    this.addMappingProgress = 0;
+
+    this.addMappingTotal = this.selectedFlatIds.size;
+
     this.loader.show();
 
-    this.service
+    const flatIds = [...this.selectedFlatIds];
 
-      .addMapping(this.selectedSocietyId, {
+    const societyId = this.selectedSocietyId;
 
-        wingId: this.selectedWingId,
+    const wingId = this.selectedWingId;
 
-        floorId: this.selectedFloorId,
+    const floorId = this.selectedFloorId;
 
-        flatId: this.selectedFlatId
+    const addNext = (index: number): void => {
 
-      })
+      if (index >= flatIds.length) {
 
-      .subscribe({
+        this.selectedFlatIds = new Set<number>();
+
+        this.flatSearchTerm = '';
+
+        this.successMessage.set(`${flatIds.length} flat(s) added to the structure successfully.`);
+
+        this.loadStructure();
+
+        this.loadSocieties();
+
+        this.savingMapping = false;
+
+        this.loader.hide();
+
+        return;
+
+      }
+
+      this.service.addMapping(societyId!, { wingId: wingId!, floorId: floorId!, flatId: flatIds[index] }).subscribe({
 
         next: () => {
 
-          this.selectedFlatId = null;
+          this.addMappingProgress = index + 1;
 
-          this.successMessage.set('Flat added to the structure successfully.');
-
-          this.loadStructure();
-
-          this.loadSocieties();
-
-          this.savingMapping = false;
-
-          this.loader.hide();
+          addNext(index + 1);
 
         },
 
         error: (err) => {
 
-          this.errorMessage.set(err?.error?.message ?? 'Unable to add the flat. Please try again.');
+          this.errorMessage.set(err?.error?.message ?? `Unable to add flat ${flatIds[index]}. Please try again.`);
 
           this.savingMapping = false;
 
@@ -629,6 +685,10 @@ export class SocietyConfiguration implements OnInit {
         }
 
       });
+
+    };
+
+    addNext(0);
 
   }
 

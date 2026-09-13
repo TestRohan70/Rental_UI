@@ -911,3 +911,245 @@
     transition: none;
   }
 }
+
+/* ══════════════════════════════════════════
+   Flat Multi-Select Picker
+══════════════════════════════════════════ */
+
+.flat-picker-header {
+  margin-bottom: 10px;
+}
+
+.flat-count-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--accent-text);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* ── Search bar ── */
+.flat-search-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.flat-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.flat-search-input {
+  width: 100%;
+  padding: 8px 32px 8px 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.flat-search-input:focus {
+  border-color: var(--accent-border);
+}
+
+.flat-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border-strong);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.flat-search-clear:hover {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+/* ── Select-all row ── */
+.flat-select-all-row {
+  padding: 6px 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.flat-select-all {
+  background: transparent !important;
+  border: none !important;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.flat-count-muted {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* ── Flat picker list ── */
+.flat-picker-list {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--surface-muted);
+  scroll-behavior: smooth;
+}
+
+.flat-picker-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.flat-picker-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.flat-picker-list::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+.flat-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.12s;
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+
+.flat-checkbox-row:last-child {
+  border-bottom: none;
+}
+
+.flat-checkbox-row:hover {
+  background: var(--surface-hover);
+}
+
+.flat-checkbox-row.is-checked {
+  background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
+}
+
+.flat-checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent-text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.flat-checkbox-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+/* ── Flat chip in picker ── */
+.flat-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.flat-chip-code {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-heading);
+  font-family: 'Courier New', monospace;
+}
+
+.flat-chip-type {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.flat-picker-empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.flat-picker-placeholder {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+
+/* ── Progress bar ── */
+.add-progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 999px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.add-progress-fill {
+  height: 100%;
+  background: var(--accent-text);
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.add-progress-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+/* ── Spinner on button ── */
+.btn-mini-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

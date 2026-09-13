@@ -23,7 +23,8 @@ export class PadminLayout {
   readonly userInitial = this.userName.charAt(0).toUpperCase();
 
   navItems = [
-    { label: 'Society Configuration', icon: 'society', route: '/padmin/society-configuration' }
+    { label: 'Society Configuration', icon: 'society', route: '/padmin/society-configuration' },
+    { label: 'Wing Configuration', icon: 'wing', route: '/padmin/wing-configuration' }
   ];
 
   constructor() {

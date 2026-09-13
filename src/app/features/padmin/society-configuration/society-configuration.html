@@ -289,9 +289,9 @@
           <span>Floor</span>
         </div>
         <div class="step-line" [class.done]="!!selectedFloorId"></div>
-        <div class="step-item" [class.active]="!!selectedFloorId && !selectedFlatId" [class.done]="!!selectedFlatId">
+        <div class="step-item" [class.active]="!!selectedFloorId && selectedFlatIds.size === 0" [class.done]="selectedFlatIds.size > 0">
           <span class="step-num">3</span>
-          <span>Flat</span>
+          <span>Flat{{ selectedFlatIds.size > 1 ? 's' : '' }}{{ selectedFlatIds.size > 0 ? ' (' + selectedFlatIds.size + ')' : '' }}</span>
         </div>
       </div>
 
@@ -317,28 +317,112 @@
       </div>
 
       <div class="form-block" [class.form-block-disabled]="!selectedFloorId">
-        <label class="ui-label" for="flatSelect">Select flat</label>
-        <p class="hint">Each flat number can only be used once per wing.</p>
-        <select id="flatSelect" class="ui-select" [(ngModel)]="selectedFlatId"
-          [disabled]="!selectedWingId || !selectedFloorId">
-          <option [ngValue]="null">
-            @if (!selectedFloorId) {
-            Select a floor first
-            } @else if (availableFlatsForMapping().length === 0) {
-            No flats available for this wing
-            } @else {
-            Choose a flat...
+        <div class="flat-picker-header">
+          <label class="ui-label">Select flats
+            @if (selectedFlatIds.size > 0) {
+            <span class="flat-count-badge">{{ selectedFlatIds.size }} selected</span>
             }
-          </option>
-          @for (flat of availableFlatsForMapping(); track flat.id) {
-          <option [ngValue]="flat.id">{{ flatLabel(flat) }}</option>
+          </label>
+          <p class="hint">Each flat can only be used once per wing.</p>
+        </div>
+
+        @if (selectedFloorId) {
+        <!-- Search inside flat list -->
+        <div class="flat-search-wrap">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flat-search-icon" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input
+            class="flat-search-input"
+            type="search"
+            [(ngModel)]="flatSearchTerm"
+            placeholder="Filter flats..."
+            aria-label="Filter available flats"
+          />
+          @if (flatSearchTerm) {
+          <button type="button" class="flat-search-clear" aria-label="Clear" (click)="flatSearchTerm=''">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
           }
-        </select>
+        </div>
+
+        <!-- Select-all row -->
+        @if (filteredFlatsForPicker().length > 0) {
+        <div class="flat-select-all-row">
+          <label class="flat-checkbox-row flat-select-all">
+            <input
+              type="checkbox"
+              class="flat-checkbox"
+              [checked]="allFilteredFlatsSelected"
+              [indeterminate]="someFilteredFlatsSelected"
+              (change)="selectAllFlats($any($event.target).checked)"
+              id="selectAllFlats"
+            />
+            <span class="flat-checkbox-label">
+              {{ allFilteredFlatsSelected ? 'Deselect all' : 'Select all' }}
+              <span class="flat-count-muted">({{ filteredFlatsForPicker().length }})</span>
+            </span>
+          </label>
+        </div>
+        }
+
+        <!-- Flat list -->
+        <div class="flat-picker-list" role="listbox" aria-multiselectable="true" aria-label="Available flats">
+          @if (filteredFlatsForPicker().length === 0) {
+          <div class="flat-picker-empty">
+            @if (availableFlatsForMapping().length === 0) {
+              <span>All flats already added for this wing.</span>
+            } @else {
+              <span>No flats match "{{ flatSearchTerm }}".</span>
+            }
+          </div>
+          }
+          @for (flat of filteredFlatsForPicker(); track flat.id) {
+          <label
+            class="flat-checkbox-row"
+            [class.is-checked]="selectedFlatIds.has(flat.id)"
+            role="option"
+            [attr.aria-selected]="selectedFlatIds.has(flat.id)"
+          >
+            <input
+              type="checkbox"
+              class="flat-checkbox"
+              [checked]="selectedFlatIds.has(flat.id)"
+              (change)="toggleFlatId(flat.id)"
+              [attr.aria-label]="'Select flat ' + flat.code"
+            />
+            <span class="flat-chip">
+              <span class="flat-chip-code">{{ flat.code }}</span>
+              @if (flat.typeName) {
+              <span class="flat-chip-type">{{ flat.typeName }}</span>
+              }
+            </span>
+          </label>
+          }
+        </div>
+        } @else {
+        <div class="flat-picker-placeholder">Select a floor to see available flats.</div>
+        }
       </div>
 
+      <!-- Progress + Add button -->
+      @if (savingMapping) {
+      <div class="add-progress-bar">
+        <div class="add-progress-fill" [style.width.%]="addMappingTotal > 0 ? (addMappingProgress / addMappingTotal * 100) : 0"></div>
+      </div>
+      <p class="add-progress-label">Adding {{ addMappingProgress }} / {{ addMappingTotal }} flat(s)...</p>
+      }
+
       <button type="button" class="ui-btn ui-btn-primary ui-btn-block"
-        [disabled]="!selectedWingId || !selectedFloorId || !selectedFlatId || savingMapping" (click)="addMapping()">
-        {{ savingMapping ? 'Adding flat...' : 'Add Flat' }}
+        [disabled]="!selectedWingId || !selectedFloorId || selectedFlatIds.size === 0 || savingMapping"
+        (click)="addMappings()">
+        @if (savingMapping) {
+        <span class="btn-mini-spinner" aria-hidden="true"></span> Adding...
+        } @else if (selectedFlatIds.size > 1) {
+        Add {{ selectedFlatIds.size }} Flats
+        } @else if (selectedFlatIds.size === 1) {
+        Add Flat
+        } @else {
+        Add Flat
+        }
       </button>
     </section>
   </div>
