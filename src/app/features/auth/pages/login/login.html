@@ -1,183 +1,266 @@
 <div class="login-page">
 
-  <div class="auth-theme-slot">
-    <app-theme-toggle />
-  </div>
+  <!-- ══ Animated background ══ -->
+  <div class="login-bg" aria-hidden="true"></div>
+  <div class="login-overlay" aria-hidden="true"></div>
 
-  <!-- Background layers -->
-  <div class="bg-gradient"></div>
-  <div class="bg-waves">
-    <svg class="wave wave-1" viewBox="0 0 1440 320" preserveAspectRatio="none">
-      <path fill="url(#waveGrad1)" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,261.3C672,256,768,224,864,213.3C960,203,1056,213,1152,218.7C1248,224,1344,224,1392,224L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
-      <defs>
-        <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#6366f1" stop-opacity="0.6"/>
-          <stop offset="100%" stop-color="#a855f7" stop-opacity="0.5"/>
-        </linearGradient>
-      </defs>
-    </svg>
-    <svg class="wave wave-2" viewBox="0 0 1440 320" preserveAspectRatio="none">
-      <path fill="url(#waveGrad2)" d="M0,256L48,245.3C96,235,192,213,288,208C384,203,480,213,576,218.7C672,224,768,224,864,213.3C960,203,1056,181,1152,181.3C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
-      <defs>
-        <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
-          <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.45"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  </div>
-
-  <!-- Network dots -->
-  <div class="network-dots" aria-hidden="true">
-    @for (dot of [1,2,3,4,5,6,7,8,9,10,11,12]; track dot) {
-      <span class="dot" [style.--i]="dot"></span>
+  <!-- ══ Floating light particles ══ -->
+  <div class="particles" aria-hidden="true">
+    @for (p of particles; track p.id) {
+    <span class="particle"
+      [style.left.%]="p.x"
+      [style.animationDuration]="p.dur + 's'"
+      [style.animationDelay]="p.delay + 's'"
+      [style.width.px]="p.size"
+      [style.height.px]="p.size"
+      [style.opacity]="p.opacity">
+    </span>
     }
   </div>
 
-  <!-- Floating glass icons -->
-  <div class="float-icon float-icon--left" aria-hidden="true">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  </div>
-  <div class="float-icon float-icon--top-right" aria-hidden="true">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-      <line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/>
-      <line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
-  </div>
-  <div class="float-icon float-icon--bottom-right" aria-hidden="true">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-    </svg>
+  <!-- ══ Center driveway brand badge (positioned per user arrow & square) ══ -->
+  <div class="driveway-brand" aria-label="Premisus 360">
+    <app-brand-logo size="md" [showTagline]="true" [interactive]="true" />
   </div>
 
-  <!-- Glass login card -->
-  <div class="login-card">
+  <!-- ══ Top-right controls ══ -->
+  <div class="top-bar">
+    <app-theme-toggle />
+    <div class="lang-btn" role="button" tabindex="0" aria-label="Select language">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      <span>English</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+  </div>
 
-    <!-- Brand header -->
-    <header class="brand-header">
-      <app-brand-logo size="md" [showTagline]="true" [interactive]="true" />
-    </header>
+  <!-- ══ Left panel — overlaid on photo ══ -->
+  <aside class="left-panel" aria-label="Branding">
 
-    <!-- Welcome -->
-    <div class="welcome-section">
-      <h2 class="welcome-title">Welcome Back 👋</h2>
-      <p class="welcome-subtitle">Sign in to continue managing your society</p>
+    <!-- Hero text — centered vertically -->
+    <div class="hero-text">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        PREMISUS 360 — Society Management
+      </div>
+      <h1 class="tagline-main">Safer Communities</h1>
+      <h1 class="tagline-accent">Brighter<br/>Tomorrows</h1>
+      <p class="hero-sub">Manage. Automate. Connect.<br/>Your society, simplified.</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num">500+</span>
+          <span class="stat-lbl">Societies</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <span class="stat-num">50K+</span>
+          <span class="stat-lbl">Residents</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <span class="stat-num">99.9%</span>
+          <span class="stat-lbl">Uptime</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Form -->
-    <form class="login-form" (ngSubmit)="onLogin()" autocomplete="off" novalidate>
+    <!-- Feature pills -->
+    <div class="feature-row">
+      <div class="feature-pill">
+        <span class="pill-ico pill-ico--purple">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </span>
+        <span>Residents</span>
+      </div>
+      <div class="feature-pill">
+        <span class="pill-ico pill-ico--blue">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </span>
+        <span>Security</span>
+      </div>
+      <div class="feature-pill">
+        <span class="pill-ico pill-ico--cyan">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="1" y="3" width="15" height="13" rx="2"/>
+            <path d="M16 8h4a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-4"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/>
+            <circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </span>
+        <span>Visitors</span>
+      </div>
+      <div class="feature-pill">
+        <span class="pill-ico pill-ico--green">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </span>
+        <span>Maintenance</span>
+      </div>
+    </div>
+
+    <div class="copyright">© 2026 Premisus 360. All rights reserved.</div>
+  </aside>
+
+  <!-- ══ Right panel — login card ══ -->
+  <main class="right-panel">
+
+    <!-- Ambient glow behind card -->
+    <div class="card-ambient" aria-hidden="true"></div>
+
+    <div class="login-card">
+      <!-- Animated shimmer border line at top -->
+      <div class="card-shimmer" aria-hidden="true"></div>
+
+      <!-- Card header -->
+      <div class="card-head">
+        <h2 class="card-title">Welcome Back</h2>
+        <p class="card-sub">Sign in to continue managing your society</p>
+      </div>
+
+      <!-- Form -->
+      <form class="login-form" (ngSubmit)="onLogin()" autocomplete="off" novalidate>
 
         @if (errorMessage()) {
-          <div class="alert-error" role="alert">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span>{{ errorMessage() }}</span>
-          </div>
-        }
-
-      <!-- Username -->
-      <div class="field">
-        <label class="field-label" for="userName">Username</label>
-        <div class="field-input-wrap">
-          <span class="field-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </span>
-          <input
-            id="userName"
-            type="text"
-            class="field-input"
-            placeholder="Username"
-            [(ngModel)]="loginModel.userName"
-            name="userName"
-            autocomplete="username"
-            required
-            aria-required="true"/>
-        </div>
-      </div>
-
-      <!-- Password -->
-      <div class="field">
-        <label class="field-label" for="password">Password</label>
-        <div class="field-input-wrap">
-          <span class="field-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </span>
-          <input
-            id="password"
-            [type]="showPassword ? 'text' : 'password'"
-            class="field-input"
-            placeholder="Password"
-            [(ngModel)]="loginModel.password"
-            name="password"
-            autocomplete="current-password"
-            required
-            aria-required="true"/>
-          <button type="button" class="eye-btn" (click)="togglePassword()" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
-            @if (showPassword) {
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-              </svg>
-            } @else {
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            }
-          </button>
-        </div>
-      </div>
-
-      <!-- Remember / Forgot -->
-      <div class="form-row">
-        <label class="remember-label">
-          <input type="checkbox" class="remember-check" [(ngModel)]="rememberMe" name="rememberMe"/>
-          <span class="checkmark"></span>
-          <span class="remember-text">Remember me</span>
-        </label>
-        <a href="#" class="forgot-link">Forgot Password?</a>
-      </div>
-
-      <!-- Submit -->
-      <button type="submit" class="submit-btn" [disabled]="loader.isVisible()" [attr.aria-busy]="loader.isVisible()">
-        @if (loader.isVisible()) {
-          <span>Signing in...</span>
-        } @else {
-          <span>Sign In</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
+        <div class="alert-error" role="alert">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
         }
-      </button>
 
-      <!-- Divider -->
+        <!-- Username -->
+        <div class="field" [class.field--active]="loginModel.userName">
+          <label class="field-label" for="userName">Username</label>
+          <div class="field-wrap">
+            <span class="field-ico" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <input id="userName" type="text" class="field-input" placeholder="Enter your username"
+              [(ngModel)]="loginModel.userName" name="userName" autocomplete="username"
+              required aria-required="true"/>
+            @if (loginModel.userName) {
+            <span class="field-check" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
+            }
+          </div>
+        </div>
 
-      <!-- Social login -->
-    
-    </form>
+        <!-- Password -->
+        <div class="field" [class.field--active]="loginModel.password">
+          <label class="field-label" for="password">Password</label>
+          <div class="field-wrap">
+            <span class="field-ico" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input id="password" [type]="showPassword ? 'text' : 'password'" class="field-input"
+              placeholder="Enter your password" [(ngModel)]="loginModel.password" name="password"
+              autocomplete="current-password" required aria-required="true"/>
+            <button type="button" class="eye-btn" (click)="togglePassword()"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+              @if (showPassword) {
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              } @else {
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              }
+            </button>
+          </div>
+        </div>
 
-    <!-- Footer -->
-    <p class="form-footer">
-      Don't have an account?
-      <a routerLink="/signup" class="signup-link">Sign up now</a>
-    </p>
-  </div>
+        <!-- Remember / Forgot -->
+        <div class="form-row">
+          <label class="remember-label">
+            <input type="checkbox" class="remember-check" [(ngModel)]="rememberMe" name="rememberMe"/>
+            <span class="checkmark"></span>
+            <span class="remember-text">Remember me</span>
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- Sign In -->
+        <button type="submit" class="submit-btn" [disabled]="loader.isVisible()" [attr.aria-busy]="loader.isVisible()">
+          <span class="btn-glow" aria-hidden="true"></span>
+          @if (loader.isVisible()) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <span>Signing in...</span>
+          } @else {
+            <span>Sign In</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          }
+        </button>
+
+      </form>
+
+      <!-- Card footer -->
+      <div class="card-foot">
+        <svg class="city-svg" viewBox="0 0 360 52" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="sf" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#818cf8" stop-opacity="0.05"/>
+            </linearGradient>
+          </defs>
+          <rect x="0"   y="34" width="18" height="18" fill="url(#sf)"/>
+          <rect x="4"   y="22" width="10" height="30" fill="url(#sf)"/>
+          <rect x="18"  y="38" width="14" height="14" fill="url(#sf)"/>
+          <rect x="22"  y="28" width="6"  height="24" fill="url(#sf)"/>
+          <rect x="35"  y="30" width="16" height="22" fill="url(#sf)"/>
+          <rect x="40"  y="18" width="8"  height="34" fill="url(#sf)"/>
+          <rect x="52"  y="36" width="12" height="16" fill="url(#sf)"/>
+          <rect x="56"  y="26" width="6"  height="26" fill="url(#sf)"/>
+          <rect x="130" y="14" width="14" height="38" fill="url(#sf)"/>
+          <rect x="136" y="6"  width="4"  height="12" fill="url(#sf)"/>
+          <rect x="148" y="24" width="12" height="28" fill="url(#sf)"/>
+          <rect x="162" y="18" width="18" height="34" fill="url(#sf)"/>
+          <rect x="182" y="10" width="16" height="42" fill="url(#sf)"/>
+          <rect x="189" y="2"  width="4"  height="12" fill="url(#sf)"/>
+          <rect x="200" y="22" width="14" height="30" fill="url(#sf)"/>
+          <rect x="216" y="28" width="12" height="24" fill="url(#sf)"/>
+          <rect x="296" y="28" width="10" height="24" fill="url(#sf)"/>
+          <rect x="310" y="30" width="16" height="22" fill="url(#sf)"/>
+          <rect x="315" y="18" width="8"  height="34" fill="url(#sf)"/>
+          <rect x="330" y="36" width="14" height="16" fill="url(#sf)"/>
+          <rect x="345" y="32" width="15" height="20" fill="url(#sf)"/>
+          <circle cx="137" cy="9"  r="1.5" fill="#38bdf8" opacity="0.8"/>
+          <circle cx="190" cy="5"  r="1.5" fill="#818cf8" opacity="0.8"/>
+          <circle cx="8"   cy="26" r="1"   fill="#38bdf8" opacity="0.5"/>
+          <rect x="0" y="50" width="360" height="2" fill="url(#sf)" opacity="0.3"/>
+        </svg>
+        <p class="foot-label">COMMUNITIES FOR A BRIGHTER TOMORROW</p>
+        <div class="foot-line"></div>
+        <p class="signup-row">
+          Don't have an account?
+          <a routerLink="/signup" class="signup-link">Sign up now</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
 </div>
