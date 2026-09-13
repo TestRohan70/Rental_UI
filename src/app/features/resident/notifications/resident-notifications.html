@@ -1,0 +1,41 @@
+<div class="notifications-page">
+  <header class="page-header">
+    <div>
+      <h1>Notifications & Alerts</h1>
+      <p>Stay updated on visitor requests, gate approvals, and system alerts</p>
+    </div>
+    @if (notificationService.unreadCount() > 0) {
+      <button type="button" class="action-btn" (click)="markAllRead()">
+        Mark All Read
+      </button>
+    }
+  </header>
+
+  @if (notificationService.notifications().length === 0) {
+    <div class="empty-state">No notifications found.</div>
+  } @else {
+    <ul class="notification-list">
+      @for (item of notificationService.notifications(); track item.id) {
+        <li
+          class="notification-card"
+          [class.unread]="!item.isRead"
+          (click)="onNotificationClick(item)"
+        >
+          <div class="card-icon">
+            <span class="icon">🔔</span>
+          </div>
+          <div class="card-content">
+            <div class="card-head">
+              <h3>{{ item.title }}</h3>
+              <span class="time">{{ item.createdDate | date:'medium' }}</span>
+            </div>
+            <p>{{ item.message }}</p>
+          </div>
+          @if (!item.isRead) {
+            <span class="unread-dot"></span>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>
