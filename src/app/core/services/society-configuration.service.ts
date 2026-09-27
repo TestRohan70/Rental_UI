@@ -93,11 +93,47 @@ export interface CreateSocietyAdminRequest {
   password: string;
 }
 
+export interface CreatePmAdminAccountPayload {
+  societyID: number;
+  name: string;
+  email: string;
+  phone: string;
+  username: string;
+  password: string;
+}
+
+export interface PmAdminAccountItem {
+  id?: number;
+  societyID?: number;
+  name: string;
+  email: string;
+  phone: string;
+  username: string;
+  isActive?: boolean;
+}
+
+export interface CreateFloorPayload {
+  societyId?: number;
+  wingId: number;
+  name: string;
+  floorNumber: number;
+}
+
+export interface CreateFlatPayload {
+  societyId?: number;
+  wingId: number;
+  floorId: number;
+  code: string;
+  typeName?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SocietyConfigurationService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/padmin`;
   private readonly pmAccountUrl = `${environment.apiUrl}/PmAccount`;
+
+  currentSocietyId: number | null = null;
 
   buildPmAccountPayload(input: {
     socName: string;
@@ -234,5 +270,24 @@ export class SocietyConfigurationService {
 
   createSocietyAdmin(societyId: number, payload: CreateSocietyAdminRequest): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.baseUrl}/societies/${societyId}/admin`, payload);
+  }
+
+  private readonly pmAdminAccountUrl = `${environment.apiUrl}/PmAdminAccount`;
+
+  createPmAdminAccount(payload: CreatePmAdminAccountPayload): Observable<any> {
+    return this.http.post<any>(this.pmAdminAccountUrl, payload);
+  }
+
+  getPmAdminAccounts(societyId: number): Observable<PmAdminAccountItem[]> {
+    const params = new HttpParams().set('societyID', String(societyId));
+    return this.http.get<PmAdminAccountItem[]>(this.pmAdminAccountUrl, { params });
+  }
+
+  createFloor(payload: CreateFloorPayload): Observable<FloorItem> {
+    return this.http.post<FloorItem>(`${this.baseUrl}/masters/floors`, payload);
+  }
+
+  createFlat(payload: CreateFlatPayload): Observable<FlatItem> {
+    return this.http.post<FlatItem>(`${this.baseUrl}/masters/flats`, payload);
   }
 }

@@ -150,12 +150,22 @@ export const routes: Routes = [
           import('./features/padmin/society-configuration/society-configuration').then(m => m.SocietyConfiguration)
       },
       {
+        path: 'society-configuration/:id',
+        loadComponent: () =>
+          import('./features/padmin/society-configuration/society-configuration').then(m => m.SocietyConfiguration)
+      },
+      {
         path: 'society-configuration/:societyId/add-admin',
         loadComponent: () =>
           import('./features/padmin/add-society-admin/add-society-admin').then(m => m.AddSocietyAdmin)
       },
       {
         path: 'wing-configuration',
+        loadComponent: () =>
+          import('./features/padmin/wing-configuration/wing-configuration').then(m => m.WingConfiguration)
+      },
+      {
+        path: 'wing-configuration/:societyId',
         loadComponent: () =>
           import('./features/padmin/wing-configuration/wing-configuration').then(m => m.WingConfiguration)
       }

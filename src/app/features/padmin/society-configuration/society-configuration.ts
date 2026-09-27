@@ -1,17 +1,20 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
+  CreatePmAdminAccountPayload,
   FlatItem,
   FloorItem,
+  PmAdminAccountItem,
   SocietyConfigurationService,
   SocietyStructure,
   SocietySummary,
   WingItem
 } from '../../../core/services/society-configuration.service';
+import { WingConfigurationService } from '../../../core/services/wing-configuration.service';
 import { LoaderService } from '../../../core/services/loader.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
-import { ActivatedRoute, Router } from '@angular/router';
 
 export interface SpcFormItem {
   name: string;
@@ -28,6 +31,7 @@ export interface SpcFormItem {
 })
 export class SocietyConfiguration implements OnInit {
   private readonly service = inject(SocietyConfigurationService);
+  private readonly wingService = inject(WingConfigurationService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -35,6 +39,7 @@ export class SocietyConfiguration implements OnInit {
 
   readonly societies = signal<SocietySummary[]>([]);
   readonly structure = signal<SocietyStructure | null>(null);
+  readonly societyWings = signal<WingItem[]>([]);
   readonly masterWings = signal<WingItem[]>([]);
   readonly masterFloors = signal<FloorItem[]>([]);
   readonly masterFlats = signal<FlatItem[]>([]);
@@ -44,8 +49,17 @@ export class SocietyConfiguration implements OnInit {
   searchTerm = '';
   viewMode: 'list' | 'configure' = 'list';
   selectedSocietyId: number | null = null;
-  flatSearchTerm = '';
+  readonly selectedSociety = signal<SocietySummary | null>(null);
 
+  // Accordion state (Admin Config open by default)
+  openSections: Record<'admin' | 'wing' | 'floor' | 'flat', boolean> = {
+    admin: true,
+    wing: false,
+    floor: false,
+    flat: false
+  };
+
+  // ── 1. Create/Edit Society Modal State (List view) ──
   societyForm: {
     socName: string;
     email: string;
@@ -57,39 +71,146 @@ export class SocietyConfiguration implements OnInit {
     phone: '',
     spcs: [{ name: '', designation: '', contact: '' }]
   };
-
   formErrors: Record<string, string> = {};
   showSocietyModal = false;
   editingSociety: SocietySummary | null = null;
   savingSociety = false;
 
-  selectedWingId: number | null = null;
-  selectedFloorId: number | null = null;
-  selectedFlatIds = new Set<number>();
-  savingMapping = false;
-  addMappingProgress = 0;
-  addMappingTotal = 0;
+  // ── 2. Admin Config Form State ──
+  adminForm = {
+    name: '',
+    email: '',
+    phone: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+    isActive: true
+  };
+  adminFormErrors: Record<string, string> = {};
+  showAdminPassword = false;
+  showAdminConfirmPassword = false;
+  savingAdmin = false;
+  readonly adminAccounts = signal<PmAdminAccountItem[]>([]);
+  loadingAdmins = false;
 
-  expandedWingIds = new Set<number>();
+  // ── 3. Wing Config Form State ──
+  wingForm = {
+    name: '',
+    code: '',
+    isActive: true
+  };
+  wingFormErrors: Record<string, string> = {};
+  savingWing = false;
+
+  // ── 4. Floor Config Form State ──
+  floorForm = {
+    wingId: null as number | null,
+    name: '',
+    floorNumber: null as number | null
+  };
+  floorFormErrors: Record<string, string> = {};
+  savingFloor = false;
+
+  // ── 5. Flat Config Form State ──
+  flatForm = {
+    wingId: null as number | null,
+    floorId: null as number | null,
+    flatNumber: '',
+    flatType: ''
+  };
+  flatFormErrors: Record<string, string> = {};
+  savingFlat = false;
+
+  private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  private readonly phonePattern = /^[0-9+()\-\s]{7,15}$/;
 
   ngOnInit(): void {
-    this.loadSocieties();
-    const qId = this.route.snapshot.queryParams['societyId'] ?? this.route.snapshot.queryParams['id'];
-    if (qId) {
-      const id = Number(qId);
-      if (!isNaN(id) && id > 0) {
-        this.selectedSocietyId = id;
-        this.viewMode = 'configure';
-        this.loadMasterData();
-        this.loadStructure();
+    this.route.paramMap.subscribe((params) => {
+      const idStr = params.get('id');
+      if (idStr) {
+        const id = Number(idStr);
+        if (!isNaN(id) && id > 0) {
+          this.initConfigureMode(id);
+          return;
+        }
       }
-    }
+
+      // Check query parameter fallback (?id= or ?societyId=)
+      const qId = this.route.snapshot.queryParams['societyId'] ?? this.route.snapshot.queryParams['id'];
+      if (qId) {
+        const id = Number(qId);
+        if (!isNaN(id) && id > 0) {
+          this.initConfigureMode(id);
+          return;
+        }
+      }
+
+      // Default: list view
+      this.viewMode = 'list';
+      this.selectedSocietyId = null;
+      this.selectedSociety.set(null);
+      this.loadSocieties();
+    });
   }
 
-  navigateToAddSocietyAdmin(): void {
-    if (this.selectedSocietyId) {
-      void this.router.navigate(['/padmin/society-configuration', this.selectedSocietyId, 'add-admin']);
+  toggleSection(section: 'admin' | 'wing' | 'floor' | 'flat'): void {
+    this.openSections[section] = !this.openSections[section];
+  }
+
+  initConfigureMode(societyId: number): void {
+    this.selectedSocietyId = societyId;
+    this.service.currentSocietyId = societyId;
+    try {
+      sessionStorage.setItem('selectedSocietyId', String(societyId));
+      sessionStorage.setItem('currentSocietyId', String(societyId));
+    } catch {}
+    this.viewMode = 'configure';
+    this.loadSocietyDetails(societyId);
+    this.loadAdminAccounts(societyId);
+    this.loadSocietyWings(societyId);
+    this.loadMasterData();
+    this.loadStructure();
+  }
+
+  loadSocietyWings(societyId: number): void {
+    this.wingService.getWings(societyId).subscribe({
+      next: (wings) => {
+        this.societyWings.set(wings || []);
+        this.masterWings.set(wings || []);
+      },
+      error: () => {}
+    });
+  }
+
+  get displayWings(): WingItem[] {
+    const wingsMap = new Map<number, WingItem>();
+
+    for (const w of this.societyWings()) {
+      wingsMap.set(w.id, w);
     }
+
+    const structWings = this.structure()?.wings;
+    if (structWings) {
+      for (const sw of structWings) {
+        if (sw.wing && !wingsMap.has(sw.wing.id)) {
+          wingsMap.set(sw.wing.id, sw.wing);
+        }
+      }
+    }
+
+    return Array.from(wingsMap.values());
+  }
+
+  loadSocietyDetails(societyId: number): void {
+    this.service.getSociety(societyId).subscribe({
+      next: (data) => this.selectedSociety.set(data),
+      error: () => {
+        const found = this.societies().find((s) => s.id === societyId);
+        if (found) {
+          this.selectedSociety.set(found);
+        }
+      }
+    });
   }
 
   loadSocieties(): void {
@@ -106,8 +227,20 @@ export class SocietyConfiguration implements OnInit {
     });
   }
 
-  private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  private readonly phonePattern = /^[0-9+()\-\s]{7,15}$/;
+  configureSociety(society: SocietySummary): void {
+    void this.router.navigate(['/padmin/society-configuration', society.id]);
+  }
+
+  backToList(): void {
+    void this.router.navigate(['/padmin/society-configuration']);
+  }
+
+  clearMessages(): void {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+  }
+
+  // ────────────────── 1. Create/Edit Society Modal Methods ──────────────────
 
   resetSocietyForm(): void {
     this.societyForm = {
@@ -252,17 +385,19 @@ export class SocietyConfiguration implements OnInit {
             contact: item.Contact ?? item.contact ?? ''
           }));
         } else if (spcRaw && typeof spcRaw === 'object' && Object.keys(spcRaw).length > 0) {
-          this.societyForm.spcs = [{
-            name: spcRaw.Name ?? spcRaw.name ?? '',
-            designation: spcRaw.Designation ?? spcRaw.designation ?? '',
-            contact: spcRaw.Contact ?? spcRaw.contact ?? ''
-          }];
+          this.societyForm.spcs = [
+            {
+              name: spcRaw.Name ?? spcRaw.name ?? '',
+              designation: spcRaw.Designation ?? spcRaw.designation ?? '',
+              contact: spcRaw.Contact ?? spcRaw.contact ?? ''
+            }
+          ];
         } else {
           this.societyForm.spcs = [{ name: '', designation: '', contact: '' }];
         }
       },
       error: () => {
-        // Fallback to basic details if request fails
+        // Fallback to basic details
       }
     });
   }
@@ -337,47 +472,443 @@ export class SocietyConfiguration implements OnInit {
     });
   }
 
-  configureSociety(society: SocietySummary): void {
-    this.selectedSocietyId = society.id;
-    this.viewMode = 'configure';
-    this.resetMappingForm();
-    this.loadMasterData();
-    this.loadStructure();
+  // ────────────────── 2. Admin Config Methods ──────────────────
+
+  toggleAdminPassword(): void {
+    this.showAdminPassword = !this.showAdminPassword;
   }
 
-  backToList(): void {
-    this.viewMode = 'list';
-    this.selectedSocietyId = null;
-    this.structure.set(null);
-    this.resetMappingForm();
-    this.expandedWingIds.clear();
+  toggleAdminConfirmPassword(): void {
+    this.showAdminConfirmPassword = !this.showAdminConfirmPassword;
   }
 
-  resetMappingForm(): void {
-    this.selectedWingId = null;
-    this.selectedFloorId = null;
-    this.selectedFlatIds = new Set<number>();
-    this.flatSearchTerm = '';
-    this.masterFloors.set([]);
+  resetAdminForm(): void {
+    this.adminForm = {
+      name: '',
+      email: '',
+      phone: '',
+      username: '',
+      password: '',
+      confirmPassword: '',
+      isActive: true
+    };
+    this.adminFormErrors = {};
   }
+
+  validateAdminForm(): boolean {
+    this.adminFormErrors = {};
+    let valid = true;
+
+    if (!this.adminForm.name.trim()) {
+      this.adminFormErrors['name'] = 'Name is required.';
+      valid = false;
+    }
+
+    if (!this.adminForm.email.trim()) {
+      this.adminFormErrors['email'] = 'Email is required.';
+      valid = false;
+    } else if (!this.emailPattern.test(this.adminForm.email.trim())) {
+      this.adminFormErrors['email'] = 'Enter a valid email address.';
+      valid = false;
+    }
+
+    if (!this.adminForm.phone.trim()) {
+      this.adminFormErrors['phone'] = 'Phone is required.';
+      valid = false;
+    } else if (!this.phonePattern.test(this.adminForm.phone.trim())) {
+      this.adminFormErrors['phone'] = 'Enter a valid phone number.';
+      valid = false;
+    }
+
+    if (!this.adminForm.username.trim()) {
+      this.adminFormErrors['username'] = 'Username is required.';
+      valid = false;
+    }
+
+    if (!this.adminForm.password) {
+      this.adminFormErrors['password'] = 'Password is required.';
+      valid = false;
+    } else if (this.adminForm.password.length < 6) {
+      this.adminFormErrors['password'] = 'Password must be at least 6 characters.';
+      valid = false;
+    }
+
+    if (!this.adminForm.confirmPassword) {
+      this.adminFormErrors['confirmPassword'] = 'Confirm Password is required.';
+      valid = false;
+    } else if (this.adminForm.confirmPassword !== this.adminForm.password) {
+      this.adminFormErrors['confirmPassword'] = 'Passwords do not match.';
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  saveAdmin(): void {
+    if (!this.validateAdminForm() || !this.selectedSocietyId) {
+      return;
+    }
+
+    this.savingAdmin = true;
+    this.loader.show();
+    this.clearMessages();
+
+    const payload: CreatePmAdminAccountPayload = {
+      societyID: this.selectedSocietyId,
+      name: this.adminForm.name.trim(),
+      email: this.adminForm.email.trim(),
+      phone: this.adminForm.phone.trim(),
+      username: this.adminForm.username.trim(),
+      password: this.adminForm.password
+    };
+
+    this.service.createPmAdminAccount(payload).subscribe({
+      next: (res) => {
+        this.loader.hide();
+        this.savingAdmin = false;
+        this.successMessage.set(res?.message ?? 'Admin account created successfully.');
+        this.adminAccounts.update((list) => [
+          ...list,
+          {
+            name: payload.name,
+            email: payload.email,
+            phone: payload.phone,
+            username: payload.username,
+            isActive: this.adminForm.isActive,
+            societyID: this.selectedSocietyId!
+          }
+        ]);
+        this.resetAdminForm();
+        this.loadAdminAccounts(this.selectedSocietyId!);
+      },
+      error: (err) => {
+        this.loader.hide();
+        this.savingAdmin = false;
+        if (err?.status === 404) {
+          // Attempt fallback to existing society-admin endpoint if available
+          this.service
+            .createSocietyAdmin(this.selectedSocietyId!, {
+              userName: payload.username,
+              email: payload.email,
+              password: payload.password
+            })
+            .subscribe({
+              next: (fbRes) => {
+                this.successMessage.set(fbRes?.message ?? 'Society Admin created successfully.');
+                this.adminAccounts.update((list) => [
+                  ...list,
+                  {
+                    name: payload.name,
+                    email: payload.email,
+                    phone: payload.phone,
+                    username: payload.username,
+                    isActive: this.adminForm.isActive,
+                    societyID: this.selectedSocietyId!
+                  }
+                ]);
+                this.resetAdminForm();
+              },
+              error: () => {
+                this.errorMessage.set(
+                  'POST /api/PmAdminAccount returned 404: Endpoint not found on backend.'
+                );
+              }
+            });
+        } else {
+          this.errorMessage.set(err?.error?.message ?? 'Unable to save admin account. Please try again.');
+        }
+      }
+    });
+  }
+
+  loadAdminAccounts(societyId: number): void {
+    this.loadingAdmins = true;
+    this.service.getPmAdminAccounts(societyId).subscribe({
+      next: (data) => {
+        if (Array.isArray(data)) {
+          this.adminAccounts.set(data);
+        }
+        this.loadingAdmins = false;
+      },
+      error: () => {
+        this.loadingAdmins = false;
+      }
+    });
+  }
+
+  // ────────────────── 3. Wing Config Methods ──────────────────
+
+  validateWingForm(): boolean {
+    this.wingFormErrors = {};
+    let valid = true;
+    if (!this.wingForm.name.trim()) {
+      this.wingFormErrors['name'] = 'Wing Name is required.';
+      valid = false;
+    }
+    if (!this.wingForm.code.trim()) {
+      this.wingFormErrors['code'] = 'Wing Code is required.';
+      valid = false;
+    }
+    return valid;
+  }
+
+  addWing(): void {
+    if (!this.selectedSocietyId || this.selectedSocietyId <= 0) {
+      this.errorMessage.set('Society is required.');
+      return;
+    }
+
+    if (!this.validateWingForm()) {
+      return;
+    }
+
+    this.savingWing = true;
+    this.loader.show();
+    this.clearMessages();
+
+    this.wingService
+      .createWing({
+        societyID: this.selectedSocietyId,
+        name: this.wingForm.name.trim(),
+        code: this.wingForm.code.trim().toUpperCase(),
+        isActive: this.wingForm.isActive
+      })
+      .subscribe({
+        next: (newWing) => {
+          this.loader.hide();
+          this.savingWing = false;
+          this.successMessage.set(`Wing "${newWing.name}" added successfully.`);
+          this.wingForm = { name: '', code: '', isActive: true };
+
+          if (newWing) {
+            this.societyWings.update((list) => {
+              const exists = list.some(
+                (w) => w.id === newWing.id || (w.code && w.code.toUpperCase() === newWing.code.toUpperCase())
+              );
+              return exists ? list : [newWing, ...list];
+            });
+            this.masterWings.update((list) => {
+              const exists = list.some((w) => w.id === newWing.id);
+              return exists ? list : [newWing, ...list];
+            });
+          }
+
+          if (this.selectedSocietyId) {
+            this.loadSocietyWings(this.selectedSocietyId);
+          }
+          this.loadMasterData();
+          this.loadStructure();
+        },
+        error: (err) => {
+          this.loader.hide();
+          this.savingWing = false;
+          this.errorMessage.set(err?.error?.message ?? 'Unable to add wing. Please try again.');
+        }
+      });
+  }
+
+  // ────────────────── 4. Floor Config Methods ──────────────────
+
+  validateFloorForm(): boolean {
+    this.floorFormErrors = {};
+    let valid = true;
+    if (!this.floorForm.wingId) {
+      this.floorFormErrors['wingId'] = 'Please select a wing.';
+      valid = false;
+    }
+    if (!this.floorForm.name.trim()) {
+      this.floorFormErrors['name'] = 'Floor Name is required.';
+      valid = false;
+    }
+    if (this.floorForm.floorNumber === null || isNaN(Number(this.floorForm.floorNumber))) {
+      this.floorFormErrors['floorNumber'] = 'Valid Floor Number is required.';
+      valid = false;
+    }
+    return valid;
+  }
+
+  addFloor(): void {
+    if (!this.validateFloorForm() || !this.selectedSocietyId) {
+      return;
+    }
+
+    this.savingFloor = true;
+    this.loader.show();
+    this.clearMessages();
+
+    this.service
+      .createFloor({
+        societyId: this.selectedSocietyId,
+        wingId: this.floorForm.wingId!,
+        name: this.floorForm.name.trim(),
+        floorNumber: Number(this.floorForm.floorNumber)
+      })
+      .subscribe({
+        next: (res) => {
+          this.loader.hide();
+          this.savingFloor = false;
+          this.successMessage.set(`Floor "${res.name ?? this.floorForm.name}" added successfully.`);
+          this.floorForm.name = '';
+          this.floorForm.floorNumber = null;
+          this.loadStructure();
+        },
+        error: (err) => {
+          this.loader.hide();
+          this.savingFloor = false;
+          if (err?.status === 404) {
+            this.errorMessage.set(
+              'Floor creation endpoint (POST /api/padmin/masters/floors) is not implemented on backend.'
+            );
+          } else {
+            this.errorMessage.set(err?.error?.message ?? 'Unable to add floor. Please try again.');
+          }
+        }
+      });
+  }
+
+  // ────────────────── 5. Flat Config Methods ──────────────────
+
+  getFloorsForSelectedFlatWing(): FloorItem[] {
+    if (!this.flatForm.wingId) return [];
+    const wingNode = this.structure()?.wings.find((w) => w.wing.id === this.flatForm.wingId);
+    if (wingNode && wingNode.floors.length > 0) {
+      return wingNode.floors.map((f) => f.floor);
+    }
+    return this.masterFloors();
+  }
+
+  onFlatWingChange(wingId: number | null): void {
+    this.flatForm.wingId = wingId;
+    this.flatForm.floorId = null;
+    if (wingId) {
+      this.loadFloorsForWing(wingId);
+    }
+  }
+
+  validateFlatForm(): boolean {
+    this.flatFormErrors = {};
+    let valid = true;
+    if (!this.flatForm.wingId) {
+      this.flatFormErrors['wingId'] = 'Please select a wing.';
+      valid = false;
+    }
+    if (!this.flatForm.floorId) {
+      this.flatFormErrors['floorId'] = 'Please select a floor.';
+      valid = false;
+    }
+    if (!this.flatForm.flatNumber.trim()) {
+      this.flatFormErrors['flatNumber'] = 'Flat Number is required.';
+      valid = false;
+    }
+    return valid;
+  }
+
+  addFlat(): void {
+    if (!this.validateFlatForm() || !this.selectedSocietyId) {
+      return;
+    }
+
+    this.savingFlat = true;
+    this.loader.show();
+    this.clearMessages();
+
+    const existingMaster = this.masterFlats().find(
+      (f) => f.code.toLowerCase() === this.flatForm.flatNumber.trim().toLowerCase()
+    );
+
+    if (existingMaster) {
+      this.service
+        .addMapping(this.selectedSocietyId, {
+          wingId: this.flatForm.wingId!,
+          floorId: this.flatForm.floorId!,
+          flatId: existingMaster.id
+        })
+        .subscribe({
+          next: () => {
+            this.loader.hide();
+            this.savingFlat = false;
+            this.successMessage.set(`Flat ${existingMaster.code} added to structure successfully.`);
+            this.flatForm.flatNumber = '';
+            this.flatForm.flatType = '';
+            this.loadStructure();
+          },
+          error: (err) => {
+            this.loader.hide();
+            this.savingFlat = false;
+            this.errorMessage.set(err?.error?.message ?? 'Unable to add flat. Please try again.');
+          }
+        });
+    } else {
+      this.service
+        .createFlat({
+          societyId: this.selectedSocietyId,
+          wingId: this.flatForm.wingId!,
+          floorId: this.flatForm.floorId!,
+          code: this.flatForm.flatNumber.trim(),
+          typeName: this.flatForm.flatType.trim() || undefined
+        })
+        .subscribe({
+          next: (newFlat) => {
+            this.service
+              .addMapping(this.selectedSocietyId!, {
+                wingId: this.flatForm.wingId!,
+                floorId: this.flatForm.floorId!,
+                flatId: newFlat.id
+              })
+              .subscribe({
+                next: () => {
+                  this.loader.hide();
+                  this.savingFlat = false;
+                  this.successMessage.set(`Flat ${newFlat.code} added successfully.`);
+                  this.flatForm.flatNumber = '';
+                  this.flatForm.flatType = '';
+                  this.loadStructure();
+                  this.loadMasterData();
+                },
+                error: () => {
+                  this.loader.hide();
+                  this.savingFlat = false;
+                  this.loadStructure();
+                }
+              });
+          },
+          error: (err) => {
+            this.loader.hide();
+            this.savingFlat = false;
+            if (err?.status === 404) {
+              this.errorMessage.set(
+                'Flat creation endpoint (POST /api/padmin/masters/flats) is not implemented on backend.'
+              );
+            } else {
+              this.errorMessage.set(err?.error?.message ?? 'Unable to add flat. Please try again.');
+            }
+          }
+        });
+    }
+  }
+
+  // ────────────────── Structure & Master Loading ──────────────────
 
   loadMasterData(): void {
-    this.service.getMasterWings().subscribe({
-      next: (wings) => this.masterWings.set(wings),
-      error: () => this.errorMessage.set('Unable to load wings. Please try again.')
-    });
+    if (this.selectedSocietyId && this.selectedSocietyId > 0) {
+      this.wingService.getWings(this.selectedSocietyId).subscribe({
+        next: (wings) => this.masterWings.set(wings),
+        error: () => {}
+      });
+    } else {
+      this.service.getMasterWings().subscribe({
+        next: (wings) => this.masterWings.set(wings),
+        error: () => {}
+      });
+    }
 
     this.service.getMasterFlats().subscribe({
       next: (flats) => this.masterFlats.set(flats),
-      error: () => this.errorMessage.set('Unable to load flats. Please try again.')
+      error: () => {}
     });
   }
 
   loadFloorsForWing(wingId: number | null): void {
-    this.selectedFloorId = null;
-    this.selectedFlatIds = new Set<number>();
-    this.flatSearchTerm = '';
-
     if (!wingId) {
       this.masterFloors.set([]);
       return;
@@ -385,81 +916,8 @@ export class SocietyConfiguration implements OnInit {
 
     this.service.getMasterFloors(wingId).subscribe({
       next: (floors) => this.masterFloors.set(floors),
-      error: () => this.errorMessage.set('Unable to load floors. Please try again.')
+      error: () => {}
     });
-  }
-
-  onWingSelected(wingId: number | null): void {
-    this.selectedWingId = wingId;
-    this.loadFloorsForWing(wingId);
-    this.syncSelectedFlat();
-  }
-
-  selectFloorContext(floorId: number | null): void {
-    this.selectedFloorId = floorId;
-    this.selectedFlatIds = new Set<number>();
-    this.flatSearchTerm = '';
-    this.syncSelectedFlat();
-  }
-
-  availableFlatsForMapping(): FlatItem[] {
-    const wingId = this.selectedWingId;
-    if (!wingId) return [];
-    const usedFlatIds = this.getMappedFlatIdsForWing(wingId);
-    return this.masterFlats().filter((f) => !usedFlatIds.has(f.id));
-  }
-
-  filteredFlatsForPicker(): FlatItem[] {
-    const term = this.flatSearchTerm.trim().toLowerCase();
-    const available = this.availableFlatsForMapping();
-    if (!term) return available;
-    return available.filter(f => f.code.toLowerCase().includes(term) || (f.typeName?.toLowerCase().includes(term)));
-  }
-
-  toggleFlatId(id: number): void {
-    if (this.selectedFlatIds.has(id)) {
-      this.selectedFlatIds.delete(id);
-    } else {
-      this.selectedFlatIds.add(id);
-    }
-    this.selectedFlatIds = new Set(this.selectedFlatIds);
-  }
-
-  selectAllFlats(checked: boolean): void {
-    this.selectedFlatIds = checked
-      ? new Set(this.filteredFlatsForPicker().map(f => f.id))
-      : new Set<number>();
-  }
-
-  get allFilteredFlatsSelected(): boolean {
-    const filtered = this.filteredFlatsForPicker();
-    return filtered.length > 0 && filtered.every(f => this.selectedFlatIds.has(f.id));
-  }
-
-  get someFilteredFlatsSelected(): boolean {
-    const filtered = this.filteredFlatsForPicker();
-    return filtered.some(f => this.selectedFlatIds.has(f.id)) && !this.allFilteredFlatsSelected;
-  }
-
-  private getMappedFlatIdsForWing(wingId: number): Set<number> {
-    const used = new Set<number>();
-    const wingNode = this.structure()?.wings.find((w) => w.wing.id === wingId);
-    if (!wingNode) {
-      return used;
-    }
-
-    for (const floorNode of wingNode.floors) {
-      for (const flat of floorNode.flats) {
-        used.add(flat.id);
-      }
-    }
-
-    return used;
-  }
-
-  private syncSelectedFlat(): void {
-    const available = new Set(this.availableFlatsForMapping().map(f => f.id));
-    this.selectedFlatIds = new Set([...this.selectedFlatIds].filter(id => available.has(id)));
   }
 
   loadStructure(): void {
@@ -471,88 +929,58 @@ export class SocietyConfiguration implements OnInit {
     this.service.getStructure(this.selectedSocietyId).subscribe({
       next: (data) => {
         this.structure.set(data);
-        this.expandedWingIds = new Set(data.wings.map((w) => w.wing.id));
-        this.syncSelectedFlat();
         this.loader.hide();
       },
       error: (err) => {
-        this.errorMessage.set(err?.error?.message ?? 'Unable to load society structure. Please try again.');
         this.loader.hide();
+        // Structure may be empty if not configured yet
       }
     });
   }
 
-  addMappings(): void {
-    if (!this.selectedSocietyId || !this.selectedWingId || !this.selectedFloorId) {
-      this.errorMessage.set('Please select a wing and floor.');
-      return;
-    }
-    if (this.selectedFlatIds.size === 0) {
-      this.errorMessage.set('Please select at least one flat.');
-      return;
-    }
-    this.savingMapping = true;
-    this.addMappingProgress = 0;
-    this.addMappingTotal = this.selectedFlatIds.size;
+  async deleteWing(wing: WingItem): Promise<void> {
+    if (!this.selectedSocietyId) return;
+
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete wing?',
+      message: `Are you sure you want to delete wing "${wing.name}"?`,
+      confirmLabel: 'Delete Wing',
+      tone: 'danger'
+    });
+
+    if (!confirmed) return;
+
     this.loader.show();
-
-    const flatIds = [...this.selectedFlatIds];
-    const societyId = this.selectedSocietyId;
-    const wingId = this.selectedWingId;
-    const floorId = this.selectedFloorId;
-
-    const addNext = (index: number): void => {
-      if (index >= flatIds.length) {
-        this.selectedFlatIds = new Set<number>();
-        this.flatSearchTerm = '';
-        this.successMessage.set(`${flatIds.length} flat(s) added to the structure successfully.`);
-        this.loadStructure();
-        this.loadSocieties();
-        this.savingMapping = false;
+    this.wingService.deleteWing(wing.id).subscribe({
+      next: () => {
         this.loader.hide();
-        return;
-      }
-
-      this.service.addMapping(societyId!, { wingId: wingId!, floorId: floorId!, flatId: flatIds[index] }).subscribe({
-        next: () => {
-          this.addMappingProgress = index + 1;
-          addNext(index + 1);
-        },
-        error: (err) => {
-          this.errorMessage.set(err?.error?.message ?? `Unable to add flat ${flatIds[index]}. Please try again.`);
-          this.savingMapping = false;
-          this.loader.hide();
+        this.successMessage.set(`Wing "${wing.name}" deleted successfully.`);
+        if (this.selectedSocietyId) {
+          this.loadSocietyWings(this.selectedSocietyId);
         }
-      });
-    };
-
-    addNext(0);
-  }
-
-  selectWing(wingId: number): void {
-    this.onWingSelected(wingId);
-  }
-
-  selectFloor(floorId: number): void {
-    this.selectedFloorId = floorId;
-  }
-
-  toggleWingExpanded(wingId: number): void {
-    if (this.expandedWingIds.has(wingId)) {
-      this.expandedWingIds.delete(wingId);
-    } else {
-      this.expandedWingIds.add(wingId);
-    }
-  }
-
-  isWingExpanded(wingId: number): boolean {
-    return this.expandedWingIds.has(wingId);
+        this.loadStructure();
+      },
+      error: () => {
+        this.service.deactivateWing(this.selectedSocietyId!, wing.id).subscribe({
+          next: () => {
+            this.loader.hide();
+            this.successMessage.set(`Wing "${wing.name}" removed from structure.`);
+            if (this.selectedSocietyId) {
+              this.loadSocietyWings(this.selectedSocietyId);
+            }
+            this.loadStructure();
+          },
+          error: (err) => {
+            this.loader.hide();
+            this.errorMessage.set(err?.error?.message ?? 'Unable to delete wing.');
+          }
+        });
+      }
+    });
   }
 
   async deactivateWing(wingId: number): Promise<void> {
-    if (!this.selectedSocietyId) {
-      return;
-    }
+    if (!this.selectedSocietyId) return;
 
     const confirmed = await this.confirmDialog.confirm({
       title: 'Remove wing from structure?',
@@ -561,24 +989,19 @@ export class SocietyConfiguration implements OnInit {
       tone: 'danger'
     });
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     this.service.deactivateWing(this.selectedSocietyId, wingId).subscribe({
       next: () => {
         this.successMessage.set('Wing removed from the structure.');
         this.loadStructure();
-        this.loadSocieties();
       },
-      error: (err) => this.errorMessage.set(err?.error?.message ?? 'Unable to remove the wing. Please try again.')
+      error: (err) => this.errorMessage.set(err?.error?.message ?? 'Unable to remove wing.')
     });
   }
 
   async deactivateFloor(wingId: number, floorId: number): Promise<void> {
-    if (!this.selectedSocietyId) {
-      return;
-    }
+    if (!this.selectedSocietyId) return;
 
     const confirmed = await this.confirmDialog.confirm({
       title: 'Remove floor from structure?',
@@ -587,24 +1010,19 @@ export class SocietyConfiguration implements OnInit {
       tone: 'danger'
     });
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     this.service.deactivateFloor(this.selectedSocietyId, wingId, floorId).subscribe({
       next: () => {
         this.successMessage.set('Floor removed from the structure.');
         this.loadStructure();
-        this.loadSocieties();
       },
-      error: (err) => this.errorMessage.set(err?.error?.message ?? 'Unable to remove the floor. Please try again.')
+      error: (err) => this.errorMessage.set(err?.error?.message ?? 'Unable to remove floor.')
     });
   }
 
   async deactivateFlat(wingId: number, floorId: number, flatId: number): Promise<void> {
-    if (!this.selectedSocietyId) {
-      return;
-    }
+    if (!this.selectedSocietyId) return;
 
     const confirmed = await this.confirmDialog.confirm({
       title: 'Remove flat from structure?',
@@ -613,34 +1031,14 @@ export class SocietyConfiguration implements OnInit {
       tone: 'danger'
     });
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     this.service.deactivateFlat(this.selectedSocietyId, wingId, floorId, flatId).subscribe({
       next: () => {
         this.successMessage.set('Flat removed from the structure.');
         this.loadStructure();
-        this.loadSocieties();
       },
-      error: (err) => this.errorMessage.set(err?.error?.message ?? 'Unable to remove the flat. Please try again.')
+      error: (err) => this.errorMessage.set(err?.error?.message ?? 'Unable to remove flat.')
     });
-  }
-
-  wingLabel(wing: WingItem): string {
-    return wing.name;
-  }
-
-  floorLabel(floor: FloorItem): string {
-    return `${floor.name} (${floor.floorNumber})`;
-  }
-
-  flatLabel(flat: FlatItem): string {
-    return flat.code;
-  }
-
-  clearMessages(): void {
-    this.errorMessage.set('');
-    this.successMessage.set('');
   }
 }

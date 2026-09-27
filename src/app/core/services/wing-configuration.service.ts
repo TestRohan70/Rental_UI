@@ -5,18 +5,22 @@ import { environment } from '../../../environments/environment';
 
 export interface WingItem {
   id: number;
+  societyID?: number;
+  societyId?: number;
   code: string;
   name: string;
   isActive: boolean;
 }
 
 export interface CreateWingRequest {
+  societyID: number;
   code: string;
   name: string;
   isActive: boolean;
 }
 
 export interface UpdateWingRequest {
+  societyID?: number;
   code: string;
   name: string;
   isActive: boolean;
@@ -27,13 +31,33 @@ export class WingConfigurationService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/padmin/wings`;
 
-  getWings(search?: string, isActive?: boolean): Observable<WingItem[]> {
+  getWings(societyId?: number | string | null, search?: string, isActive?: boolean): Observable<WingItem[]> {
     let params = new HttpParams();
-    if (search?.trim()) {
-      params = params.set('search', search.trim());
+    let actualSocietyId: number | null = null;
+    let actualSearch = search;
+    let actualIsActive = isActive;
+
+    if (typeof societyId === 'string' && isNaN(Number(societyId))) {
+      // Overload check if called previously with (search, isActive)
+      actualSearch = societyId;
+      if (typeof search === 'boolean') {
+        actualIsActive = search;
+      }
+    } else if (societyId !== undefined && societyId !== null) {
+      const num = Number(societyId);
+      if (!isNaN(num) && num > 0) {
+        actualSocietyId = num;
+      }
     }
-    if (isActive !== undefined) {
-      params = params.set('isActive', String(isActive));
+
+    if (actualSocietyId !== null) {
+      params = params.set('societyId', String(actualSocietyId));
+    }
+    if (actualSearch?.trim()) {
+      params = params.set('search', actualSearch.trim());
+    }
+    if (actualIsActive !== undefined) {
+      params = params.set('isActive', String(actualIsActive));
     }
     return this.http.get<WingItem[]>(this.baseUrl, { params });
   }
@@ -54,3 +78,4 @@ export class WingConfigurationService {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`);
   }
 }
+

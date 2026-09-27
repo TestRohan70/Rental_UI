@@ -1,8 +1,15 @@
-import { Component, OnInit, OnDestroy, inject, signal, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, HostListener, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { WingConfigurationService, WingItem } from '../../../core/services/wing-configuration.service';
+import {
+  CreateWingRequest,
+  UpdateWingRequest,
+  WingConfigurationService,
+  WingItem
+} from '../../../core/services/wing-configuration.service';
+import { SocietyConfigurationService } from '../../../core/services/society-configuration.service';
 import { LoaderService } from '../../../core/services/loader.service';
 
 interface Toast {
@@ -20,9 +27,23 @@ interface Toast {
 })
 export class WingConfiguration implements OnInit, OnDestroy {
   private readonly service = inject(WingConfigurationService);
+  private readonly societyService = inject(SocietyConfigurationService);
+  private readonly route = inject(ActivatedRoute);
   readonly loader = inject(LoaderService);
   private readonly destroy$ = new Subject<void>();
   private readonly searchSubject = new Subject<string>();
+
+  @Input() set societyId(val: number | string | null | undefined) {
+    if (val !== null && val !== undefined) {
+      const id = Number(val);
+      if (!isNaN(id) && id > 0) {
+        this.currentSocietyId = id;
+        this.loadWings();
+      }
+    }
+  }
+
+  currentSocietyId: number | null = null;
 
   // Data
   readonly wings = signal<WingItem[]>([]);
@@ -45,8 +66,18 @@ export class WingConfiguration implements OnInit, OnDestroy {
   showWingModal = false;
   editingWing: WingItem | null = null;
   savingWing = false;
-  wingForm = { code: '', name: '', isActive: true };
-  formErrors: { code?: string; name?: string } = {};
+  wingForm: {
+    societyID: number | null;
+    code: string;
+    name: string;
+    isActive: boolean;
+  } = {
+    societyID: null,
+    code: '',
+    name: '',
+    isActive: true
+  };
+  formErrors: { code?: string; name?: string; societyID?: string } = {};
 
   // Delete Modal
   showDeleteModal = false;
@@ -58,6 +89,7 @@ export class WingConfiguration implements OnInit, OnDestroy {
 
   // ─── Lifecycle ───────────────────────────────────────────────
   ngOnInit(): void {
+    this.resolveSocietyId();
     this.loadWings();
 
     this.searchSubject.pipe(
@@ -72,6 +104,55 @@ export class WingConfiguration implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  private resolveSocietyId(): void {
+    if (this.currentSocietyId && this.currentSocietyId > 0) {
+      return;
+    }
+
+    const paramId = this.route.snapshot.paramMap.get('societyId') ?? this.route.snapshot.paramMap.get('id');
+    if (paramId) {
+      const id = Number(paramId);
+      if (!isNaN(id) && id > 0) {
+        this.currentSocietyId = id;
+        return;
+      }
+    }
+
+    const queryId = this.route.snapshot.queryParamMap.get('societyId') ?? this.route.snapshot.queryParamMap.get('id');
+    if (queryId) {
+      const id = Number(queryId);
+      if (!isNaN(id) && id > 0) {
+        this.currentSocietyId = id;
+        return;
+      }
+    }
+
+    const stateSocietyId = (history.state as any)?.societyId ?? (history.state as any)?.selectedSocietyId;
+    if (stateSocietyId) {
+      const id = Number(stateSocietyId);
+      if (!isNaN(id) && id > 0) {
+        this.currentSocietyId = id;
+        return;
+      }
+    }
+
+    if (this.societyService.currentSocietyId && this.societyService.currentSocietyId > 0) {
+      this.currentSocietyId = this.societyService.currentSocietyId;
+      return;
+    }
+
+    try {
+      const storedId = sessionStorage.getItem('selectedSocietyId') ?? sessionStorage.getItem('currentSocietyId');
+      if (storedId) {
+        const id = Number(storedId);
+        if (!isNaN(id) && id > 0) {
+          this.currentSocietyId = id;
+          return;
+        }
+      }
+    } catch {}
+  }
+
   @HostListener('document:keydown.escape')
   onEsc(): void {
     if (this.showDeleteModal) { this.closeDeleteModal(); return; }
@@ -84,7 +165,7 @@ export class WingConfiguration implements OnInit, OnDestroy {
     const isActive = this.statusFilter === 'all' ? undefined :
                      this.statusFilter === 'active' ? true : false;
 
-    this.service.getWings(this.searchTerm, isActive).subscribe({
+    this.service.getWings(this.currentSocietyId, this.searchTerm, isActive).subscribe({
       next: (data) => {
         this.wings.set(data);
         this.currentPage = 1;
@@ -140,14 +221,25 @@ export class WingConfiguration implements OnInit, OnDestroy {
   // ─── Add / Edit Modal ─────────────────────────────────────────
   openCreateWing(): void {
     this.editingWing = null;
-    this.wingForm = { code: '', name: '', isActive: true };
+    this.wingForm = {
+      societyID: this.currentSocietyId,
+      code: '',
+      name: '',
+      isActive: true
+    };
     this.formErrors = {};
     this.showWingModal = true;
   }
 
   openEditWing(wing: WingItem): void {
     this.editingWing = wing;
-    this.wingForm = { code: wing.code, name: wing.name, isActive: wing.isActive };
+    const wingSocietyId = wing.societyID ?? wing.societyId ?? this.currentSocietyId;
+    this.wingForm = {
+      societyID: wingSocietyId,
+      code: wing.code,
+      name: wing.name,
+      isActive: wing.isActive
+    };
     this.formErrors = {};
     this.showWingModal = true;
   }
@@ -161,8 +253,22 @@ export class WingConfiguration implements OnInit, OnDestroy {
   validateForm(): boolean {
     this.formErrors = {};
     let ok = true;
-    if (!this.wingForm.code.trim()) { this.formErrors['code'] = 'Wing Code is required.'; ok = false; }
-    if (!this.wingForm.name.trim()) { this.formErrors['name'] = 'Wing Name is required.'; ok = false; }
+
+    const societyId = this.wingForm.societyID ?? this.currentSocietyId;
+    if (!societyId || societyId <= 0) {
+      this.formErrors['societyID'] = 'Society is required.';
+      this.showToast('error', 'Society is required.');
+      ok = false;
+    }
+
+    if (!this.wingForm.code.trim()) {
+      this.formErrors['code'] = 'Wing Code is required.';
+      ok = false;
+    }
+    if (!this.wingForm.name.trim()) {
+      this.formErrors['name'] = 'Wing Name is required.';
+      ok = false;
+    }
     return ok;
   }
 
@@ -170,37 +276,67 @@ export class WingConfiguration implements OnInit, OnDestroy {
     if (!this.validateForm()) return;
     this.savingWing = true;
 
-    const payload = {
-      code: this.wingForm.code.trim(),
-      name: this.wingForm.name.trim(),
-      isActive: this.wingForm.isActive
-    };
+    const currentSocietyId = this.wingForm.societyID ?? this.currentSocietyId!;
 
-    const request = this.editingWing
-      ? this.service.updateWing(this.editingWing.id, payload)
-      : this.service.createWing(payload);
+    if (this.editingWing) {
+      const payload: UpdateWingRequest = {
+        societyID: currentSocietyId,
+        code: this.wingForm.code.trim(),
+        name: this.wingForm.name.trim(),
+        isActive: this.wingForm.isActive
+      };
 
-    request.subscribe({
-      next: (saved) => {
-        this.showWingModal = false;
-        this.showToast('success', this.editingWing ? `"${saved.name}" updated successfully.` : `"${saved.name}" created successfully.`);
-        this.savingWing = false;
-        this.loadWings();
-        this.highlightRow(saved.id);
-      },
-      error: (err) => {
-        const msg = err?.error?.message ?? 'Unable to save wing. Please try again.';
-        // Show in-form error for duplicate
-        if (msg.toLowerCase().includes('code')) {
-          this.formErrors['code'] = msg;
-        } else if (msg.toLowerCase().includes('name')) {
-          this.formErrors['name'] = msg;
-        } else {
-          this.showToast('error', msg);
+      this.service.updateWing(this.editingWing.id, payload).subscribe({
+        next: (saved) => {
+          this.showWingModal = false;
+          this.showToast('success', `"${saved.name}" updated successfully.`);
+          this.savingWing = false;
+          this.loadWings();
+          this.highlightRow(saved.id);
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? 'Unable to save wing. Please try again.';
+          // Show in-form error for duplicate
+          if (msg.toLowerCase().includes('code')) {
+            this.formErrors['code'] = msg;
+          } else if (msg.toLowerCase().includes('name')) {
+            this.formErrors['name'] = msg;
+          } else {
+            this.showToast('error', msg);
+          }
+          this.savingWing = false;
         }
-        this.savingWing = false;
-      }
-    });
+      });
+    } else {
+      const payload: CreateWingRequest = {
+        societyID: currentSocietyId,
+        name: this.wingForm.name.trim(),
+        code: this.wingForm.code.trim(),
+        isActive: this.wingForm.isActive
+      };
+
+      this.service.createWing(payload).subscribe({
+        next: (saved) => {
+          this.showWingModal = false;
+          this.showToast('success', `"${saved.name}" created successfully.`);
+          this.savingWing = false;
+          this.loadWings();
+          this.highlightRow(saved.id);
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? 'Unable to save wing. Please try again.';
+          // Show in-form error for duplicate
+          if (msg.toLowerCase().includes('code')) {
+            this.formErrors['code'] = msg;
+          } else if (msg.toLowerCase().includes('name')) {
+            this.formErrors['name'] = msg;
+          } else {
+            this.showToast('error', msg);
+          }
+          this.savingWing = false;
+        }
+      });
+    }
   }
 
   // ─── Inline Status Toggle ─────────────────────────────────────
@@ -208,7 +344,13 @@ export class WingConfiguration implements OnInit, OnDestroy {
     if (this.togglingId === wing.id) return;
     this.togglingId = wing.id;
 
-    const payload = { code: wing.code, name: wing.name, isActive: !wing.isActive };
+    const wingSocietyId = wing.societyID ?? wing.societyId ?? this.currentSocietyId ?? undefined;
+    const payload: UpdateWingRequest = {
+      societyID: wingSocietyId,
+      code: wing.code,
+      name: wing.name,
+      isActive: !wing.isActive
+    };
 
     this.service.updateWing(wing.id, payload).subscribe({
       next: (updated) => {

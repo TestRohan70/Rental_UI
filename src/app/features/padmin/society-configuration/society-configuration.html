@@ -12,13 +12,15 @@
   </div>
   }
 
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 1. LIST VIEW (Listing Page)                                    -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   @if (viewMode === 'list') {
   <section class="hero-header">
     <div class="hero-copy">
       <span class="ui-eyebrow">Premisus 360</span>
       <h1 class="ui-title">Society Configuration</h1>
-      <p class="ui-subtitle">Manage societies and configure their wings, floors, and flats before resident onboarding.
-      </p>
+      <p class="ui-subtitle">Manage societies and configure their wings, floors, and flats before resident onboarding.</p>
     </div>
     <button type="button" class="ui-btn ui-btn-primary" (click)="openCreateSociety()">
       <span aria-hidden="true">+</span>
@@ -66,8 +68,7 @@
                 <div class="ui-empty-icon" aria-hidden="true">🏢</div>
                 <h4>No societies yet</h4>
                 <p>Create your first society to begin configuration.</p>
-                <button type="button" class="ui-btn ui-btn-primary" (click)="openCreateSociety()">Create
-                  Society</button>
+                <button type="button" class="ui-btn ui-btn-primary" (click)="openCreateSociety()">Create Society</button>
               </div>
             </td>
           </tr>
@@ -105,319 +106,517 @@
       </table>
     </div>
   </section>
-  } @else {
-  @if (structure(); as current) {
-  <nav class="ui-breadcrumb" aria-label="Breadcrumb">
-    <button type="button" (click)="backToList()">Dashboard</button>
-    <span class="ui-breadcrumb-sep" aria-hidden="true">›</span>
-    <span aria-current="page">Society Configuration</span>
-    <span class="ui-breadcrumb-sep" aria-hidden="true">›</span>
-    <span>{{ current.society.name }}</span>
-  </nav>
+  }
 
-  <section class="configure-hero">
-    <button type="button" class="ui-btn ui-btn-ghost back-btn" (click)="backToList()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        aria-hidden="true">
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-      Back
-    </button>
-    <div class="configure-hero-main">
-      <div>
-        <span class="ui-eyebrow">Society setup</span>
-        <h1 class="ui-title">{{ current.society.name }}</h1>
-        <p class="location-line">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            aria-hidden="true">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          {{ current.society.location || 'Location not set' }}
-        </p>
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 2. CONFIGURE VIEW (Dedicated Configuration Page)               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  @else {
+  <section class="config-header-panel ui-card">
+    <div class="config-nav-bar">
+      <button type="button" class="ui-btn ui-btn-ghost back-btn" (click)="backToList()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Back to Societies
+      </button>
+    </div>
+
+    <!-- Read-Only Society Context Banner -->
+    <div class="society-context-banner">
+      <div class="society-context-copy">
+        <span class="ui-eyebrow">Premisus 360 · Society Setup</span>
+        <h1 class="ui-title">Society Configuration</h1>
       </div>
-      <div class="hero-actions">
-        <button type="button" class="ui-btn ui-btn-secondary" (click)="navigateToAddSocietyAdmin()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            aria-hidden="true">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="8.5" cy="7" r="4" />
-            <line x1="20" y1="8" x2="20" y2="14" />
-            <line x1="23" y1="11" x2="17" y2="11" />
-          </svg>
-          Add Society Admin
-        </button>
+      <div class="society-meta-card">
+        <div class="meta-field">
+          <span class="meta-label">Society Name</span>
+          <strong class="meta-val">{{ selectedSociety()?.name || 'Loading...' }}</strong>
+        </div>
+        <div class="meta-divider" aria-hidden="true"></div>
+        <div class="meta-field">
+          <span class="meta-label">Society Code</span>
+          <span class="meta-code-pill">{{ selectedSociety()?.code || '—' }}</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <div class="stats-row">
-    <article class="stat-card ui-card">
-      <span class="stat-label">Wings</span>
-      <strong class="stat-value">{{ current.society.wingCount }}</strong>
-    </article>
-    <article class="stat-card ui-card">
-      <span class="stat-label">Floors</span>
-      <strong class="stat-value">{{ current.society.floorCount }}</strong>
-    </article>
-    <article class="stat-card ui-card">
-      <span class="stat-label">Flats</span>
-      <strong class="stat-value">{{ current.society.flatCount }}</strong>
-    </article>
-  </div>
+  <!-- 4 ACCORDION SECTIONS IN EXACT ORDER -->
+  <div class="config-sections-wrapper">
 
-  <div class="configure-grid">
-    <section class="panel tree-panel ui-card">
-      <div class="panel-header">
-        <div class="panel-title-wrap">
-          <span class="panel-icon panel-icon-tree" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            </svg>
-          </span>
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- SECTION 1: ADMIN CONFIG                                       -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <article class="config-section-card ui-card" [class.is-expanded]="openSections.admin">
+      <header class="section-accordion-header" (click)="toggleSection('admin')">
+        <div class="header-title-box">
+          <span class="section-order-badge">1</span>
           <div>
-            <h3>Structure</h3>
-            <p>Wings, floors, and flats configured for this society</p>
+            <h3>Admin Config</h3>
+            <p>Create and manage the admin account for the selected society.</p>
+          </div>
+        </div>
+        <button type="button" class="accordion-toggle-btn" [attr.aria-label]="openSections.admin ? 'Collapse Admin Config' : 'Expand Admin Config'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="openSections.admin" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      </header>
+
+      @if (openSections.admin) {
+      <div class="section-body">
+        <!-- Read-only Society reference in Admin form -->
+        <div class="admin-society-badge-box">
+          <span class="badge-label">Society:</span>
+          <strong>{{ selectedSociety()?.name || 'Selected Society' }}</strong>
+          <span class="meta-code-pill">{{ selectedSociety()?.code || '—' }}</span>
+          <span class="read-only-tag">(read-only)</span>
+        </div>
+
+        <div class="admin-form-grid">
+          <div class="field">
+            <label class="ui-label" for="adminName">Name <span class="required" aria-hidden="true">*</span></label>
+            <input id="adminName" class="ui-input" type="text" [(ngModel)]="adminForm.name" placeholder="Admin full name" [class.input-error]="adminFormErrors['name']" />
+            @if (adminFormErrors['name']) { <small class="field-error">{{ adminFormErrors['name'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="adminEmail">Email <span class="required" aria-hidden="true">*</span></label>
+            <input id="adminEmail" class="ui-input" type="email" [(ngModel)]="adminForm.email" placeholder="admin@example.com" [class.input-error]="adminFormErrors['email']" />
+            @if (adminFormErrors['email']) { <small class="field-error">{{ adminFormErrors['email'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="adminPhone">Phone <span class="required" aria-hidden="true">*</span></label>
+            <input id="adminPhone" class="ui-input" type="tel" [(ngModel)]="adminForm.phone" placeholder="e.g. 9876543210" [class.input-error]="adminFormErrors['phone']" />
+            @if (adminFormErrors['phone']) { <small class="field-error">{{ adminFormErrors['phone'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="adminUsername">Username <span class="required" aria-hidden="true">*</span></label>
+            <input id="adminUsername" class="ui-input" type="text" [(ngModel)]="adminForm.username" placeholder="e.g. admin_society3" [class.input-error]="adminFormErrors['username']" />
+            @if (adminFormErrors['username']) { <small class="field-error">{{ adminFormErrors['username'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="adminPassword">Password <span class="required" aria-hidden="true">*</span></label>
+            <div class="password-input-wrap">
+              <input id="adminPassword" class="ui-input" [type]="showAdminPassword ? 'text' : 'password'" [(ngModel)]="adminForm.password" placeholder="At least 6 characters" [class.input-error]="adminFormErrors['password']" />
+              <button type="button" class="pwd-toggle-btn" (click)="toggleAdminPassword()" [attr.aria-label]="showAdminPassword ? 'Hide password' : 'Show password'">
+                {{ showAdminPassword ? 'Hide' : 'Show' }}
+              </button>
+            </div>
+            @if (adminFormErrors['password']) { <small class="field-error">{{ adminFormErrors['password'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="adminConfirmPassword">Confirm Password <span class="required" aria-hidden="true">*</span></label>
+            <div class="password-input-wrap">
+              <input id="adminConfirmPassword" class="ui-input" [type]="showAdminConfirmPassword ? 'text' : 'password'" [(ngModel)]="adminForm.confirmPassword" placeholder="Confirm password" [class.input-error]="adminFormErrors['confirmPassword']" />
+              <button type="button" class="pwd-toggle-btn" (click)="toggleAdminConfirmPassword()" [attr.aria-label]="showAdminConfirmPassword ? 'Hide password' : 'Show password'">
+                {{ showAdminConfirmPassword ? 'Hide' : 'Show' }}
+              </button>
+            </div>
+            @if (adminFormErrors['confirmPassword']) { <small class="field-error">{{ adminFormErrors['confirmPassword'] }}</small> }
+          </div>
+
+          <div class="field field-switch">
+            <label class="ui-label">Is Active</label>
+            <label class="switch-control">
+              <input type="checkbox" [(ngModel)]="adminForm.isActive" />
+              <span class="switch-slider"></span>
+              <span class="switch-status-text">{{ adminForm.isActive ? 'Active (ON)' : 'Inactive (OFF)' }}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions-row">
+          <button type="button" class="ui-btn ui-btn-primary" [disabled]="savingAdmin" (click)="saveAdmin()">
+            {{ savingAdmin ? 'Saving Admin...' : 'Save Admin' }}
+          </button>
+        </div>
+
+        <!-- Admin list/table below form -->
+        <div class="sub-table-container">
+          <div class="sub-table-header">
+            <h4>Existing Admins</h4>
+            <span class="table-count">{{ adminAccounts().length }} admin(s)</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table ui-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Phone</th>
+                  <th scope="col">Username</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (adminAccounts().length === 0) {
+                <tr>
+                  <td colspan="6">
+                    <div class="ui-empty empty-state-table">
+                      <p>No admin accounts added yet for this society. Use the form above to create one.</p>
+                    </div>
+                  </td>
+                </tr>
+                } @else {
+                @for (admin of adminAccounts(); track $index) {
+                <tr class="table-row">
+                  <td><strong>{{ admin.name }}</strong></td>
+                  <td class="muted-cell">{{ admin.email }}</td>
+                  <td class="muted-cell">{{ admin.phone || '—' }}</td>
+                  <td><code>{{ admin.username }}</code></td>
+                  <td>
+                    <span class="status-badge" [class.is-active]="admin.isActive !== false">
+                      {{ admin.isActive !== false ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="muted-cell">Configured</span>
+                  </td>
+                </tr>
+                }
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+      }
+    </article>
 
-      @if (current.wings.length === 0) {
-      <div class="ui-empty">
-        <div class="ui-empty-icon" aria-hidden="true">📋</div>
-        <h4>No structure configured</h4>
-        <p>This society does not have any wings configured yet. Add a wing manually using the structure controls.</p>
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- SECTION 2: WING CONFIG                                        -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <article class="config-section-card ui-card" [class.is-expanded]="openSections.wing">
+      <header class="section-accordion-header" (click)="toggleSection('wing')">
+        <div class="header-title-box">
+          <span class="section-order-badge">2</span>
+          <div>
+            <h3>Wing Config</h3>
+            <p>Configure wings for this society. The section automatically uses the selected Society.</p>
+          </div>
+        </div>
+        <button type="button" class="accordion-toggle-btn" [attr.aria-label]="openSections.wing ? 'Collapse Wing Config' : 'Expand Wing Config'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="openSections.wing" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      </header>
+
+      @if (openSections.wing) {
+      <div class="section-body">
+        <div class="wing-form-grid">
+          <div class="field">
+            <label class="ui-label" for="wingNameInput">Wing Name <span class="required" aria-hidden="true">*</span></label>
+            <input id="wingNameInput" class="ui-input" type="text" [(ngModel)]="wingForm.name" placeholder="e.g. A Wing" [class.input-error]="wingFormErrors['name']" />
+            @if (wingFormErrors['name']) { <small class="field-error">{{ wingFormErrors['name'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="wingCodeInput">Wing Code <span class="required" aria-hidden="true">*</span></label>
+            <input id="wingCodeInput" class="ui-input" type="text" [(ngModel)]="wingForm.code" placeholder="e.g. A" [class.input-error]="wingFormErrors['code']" />
+            @if (wingFormErrors['code']) { <small class="field-error">{{ wingFormErrors['code'] }}</small> }
+          </div>
+
+          <div class="field field-switch">
+            <label class="ui-label">Status</label>
+            <label class="switch-control">
+              <input type="checkbox" [(ngModel)]="wingForm.isActive" />
+              <span class="switch-slider"></span>
+              <span class="switch-status-text">{{ wingForm.isActive ? 'Active' : 'Inactive' }}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions-row">
+          <button type="button" class="ui-btn ui-btn-primary" [disabled]="savingWing" (click)="addWing()">
+            {{ savingWing ? 'Adding Wing...' : 'Add Wing' }}
+          </button>
+        </div>
+
+        <!-- Existing Wings Table -->
+        <div class="sub-table-container">
+          <div class="sub-table-header">
+            <h4>Existing Wings</h4>
+            <span class="table-count">{{ displayWings.length }} wing(s)</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table ui-table">
+              <thead>
+                <tr>
+                  <th scope="col">Wing Name</th>
+                  <th scope="col">Code</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (displayWings.length === 0) {
+                <tr>
+                  <td colspan="4">
+                    <div class="ui-empty empty-state-table">
+                      <p>No wings configured yet for this society. Use the form above to add a wing.</p>
+                    </div>
+                  </td>
+                </tr>
+                } @else {
+                @for (w of displayWings; track w.id) {
+                <tr class="table-row">
+                  <td><strong>{{ w.name }}</strong></td>
+                  <td><span class="code-pill">{{ w.code }}</span></td>
+                  <td>
+                    <span class="status-badge" [class.is-active]="w.isActive !== false">
+                      {{ w.isActive !== false ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <button type="button" class="ui-btn ui-btn-danger action-chip" (click)="deleteWing(w)">Delete</button>
+                  </td>
+                </tr>
+                }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      } @else {
-      <div class="tree" role="tree" aria-label="Society structure">
-        @for (wingNode of current.wings; track wingNode.wing.id) {
-        <article class="tree-wing" [class.selected]="selectedWingId === wingNode.wing.id" role="treeitem"
-          [attr.aria-expanded]="isWingExpanded(wingNode.wing.id)">
-          <header class="tree-row wing-row">
-            <button type="button" class="tree-toggle" (click)="toggleWingExpanded(wingNode.wing.id)"
-              [attr.aria-label]="isWingExpanded(wingNode.wing.id) ? 'Collapse wing' : 'Expand wing'">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                [class.is-expanded]="isWingExpanded(wingNode.wing.id)">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-            <button type="button" class="tree-node" (click)="selectWing(wingNode.wing.id)">
-              <span class="node-badge node-badge-wing" aria-hidden="true">W</span>
-              <span class="node-text">
-                <strong>{{ wingNode.wing.name }}</strong>
-                <small>{{ wingNode.floors.length }} floor(s) · {{ wingNode.wing.flatCount }} flat(s)</small>
-              </span>
-            </button>
-            <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text"
-              (click)="deactivateWing(wingNode.wing.id)">Remove Wing</button>
-          </header>
+      }
+    </article>
 
-          @if (isWingExpanded(wingNode.wing.id)) {
-          @for (floorNode of wingNode.floors; track floorNode.floor.id) {
-          <div class="tree-floor" [class.selected]="selectedFloorId === floorNode.floor.id">
-            <header class="tree-row floor-row">
-              <button type="button" class="tree-node"
-                (click)="selectWing(wingNode.wing.id); selectFloor(floorNode.floor.id)">
-                <span class="node-badge node-badge-floor" aria-hidden="true">F</span>
-                <span class="node-text">
-                  <strong>{{ floorNode.floor.name }}</strong>
-                  <small>Level {{ floorNode.floor.floorNumber }} · {{ floorNode.flats.length }} flat(s)</small>
-                </span>
-              </button>
-              <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text"
-                (click)="deactivateFloor(wingNode.wing.id, floorNode.floor.id)">Remove Floor</button>
-            </header>
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- SECTION 3: FLOOR CONFIG                                       -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <article class="config-section-card ui-card" [class.is-expanded]="openSections.floor">
+      <header class="section-accordion-header" (click)="toggleSection('floor')">
+        <div class="header-title-box">
+          <span class="section-order-badge">3</span>
+          <div>
+            <h3>Floor Config</h3>
+            <p>Configure floors for wings within this society.</p>
+          </div>
+        </div>
+        <button type="button" class="accordion-toggle-btn" [attr.aria-label]="openSections.floor ? 'Collapse Floor Config' : 'Expand Floor Config'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="openSections.floor" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      </header>
 
-            <ul class="tree-flats">
-              @for (flat of floorNode.flats; track flat.id) {
-              <li class="tree-row flat-row">
-                <div class="flat-chip">
-                  <span class="node-badge node-badge-flat" aria-hidden="true">#</span>
-                  <span>Flat {{ flat.code }}</span>
-                  @if (flat.typeName) {
-                  <span class="flat-type">{{ flat.typeName }}</span>
+      @if (openSections.floor) {
+      <div class="section-body">
+        <div class="floor-form-grid">
+          <div class="field">
+            <label class="ui-label" for="floorWingSelect">Select Wing <span class="required" aria-hidden="true">*</span></label>
+            <select id="floorWingSelect" class="ui-select" [(ngModel)]="floorForm.wingId" [class.input-error]="floorFormErrors['wingId']">
+              <option [ngValue]="null">Choose a Wing...</option>
+              @for (w of displayWings; track w.id) {
+              <option [ngValue]="w.id">{{ w.name }} ({{ w.code }})</option>
+              }
+            </select>
+            @if (floorFormErrors['wingId']) { <small class="field-error">{{ floorFormErrors['wingId'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="floorNameInput">Floor Name <span class="required" aria-hidden="true">*</span></label>
+            <input id="floorNameInput" class="ui-input" type="text" [(ngModel)]="floorForm.name" placeholder="e.g. Floor 1" [class.input-error]="floorFormErrors['name']" />
+            @if (floorFormErrors['name']) { <small class="field-error">{{ floorFormErrors['name'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="floorNumberInput">Floor Number <span class="required" aria-hidden="true">*</span></label>
+            <input id="floorNumberInput" class="ui-input" type="number" [(ngModel)]="floorForm.floorNumber" placeholder="e.g. 1" [class.input-error]="floorFormErrors['floorNumber']" />
+            @if (floorFormErrors['floorNumber']) { <small class="field-error">{{ floorFormErrors['floorNumber'] }}</small> }
+          </div>
+        </div>
+
+        <div class="form-actions-row">
+          <button type="button" class="ui-btn ui-btn-primary" [disabled]="savingFloor" (click)="addFloor()">
+            {{ savingFloor ? 'Adding Floor...' : 'Add Floor' }}
+          </button>
+        </div>
+
+        <!-- Existing Floors Grouped by Wing -->
+        <div class="grouped-data-wrapper">
+          <div class="sub-table-header">
+            <h4>Existing Floors (Grouped by Wing)</h4>
+          </div>
+
+          @if (!structure()?.wings || structure()!.wings.length === 0) {
+          <div class="ui-empty empty-state-table">
+            <p>No wings configured yet. Please configure a wing first.</p>
+          </div>
+          } @else {
+          <div class="groups-grid">
+            @for (w of structure()!.wings; track w.wing.id) {
+            <div class="grouped-card ui-card">
+              <div class="grouped-card-head">
+                <div class="group-title-row">
+                  <span class="group-indicator-wing" aria-hidden="true">W</span>
+                  <strong>{{ w.wing.name }}</strong>
+                </div>
+                <span class="count-badge">{{ w.floors.length }} floor(s)</span>
+              </div>
+
+              @if (w.floors.length === 0) {
+              <p class="muted-empty-hint">No floors configured under this wing yet.</p>
+              } @else {
+              <ul class="nested-items-list">
+                @for (f of w.floors; track f.floor.id) {
+                <li class="nested-item-row">
+                  <div class="item-meta">
+                    <span class="level-indicator">Level {{ f.floor.floorNumber }}</span>
+                    <strong>{{ f.floor.name }}</strong>
+                    <span class="count-muted">({{ f.flats.length }} flats)</span>
+                  </div>
+                  <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text action-chip" (click)="deactivateFloor(w.wing.id, f.floor.id)">Remove</button>
+                </li>
+                }
+              </ul>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </article>
+
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- SECTION 4: FLAT CONFIG                                        -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <article class="config-section-card ui-card" [class.is-expanded]="openSections.flat">
+      <header class="section-accordion-header" (click)="toggleSection('flat')">
+        <div class="header-title-box">
+          <span class="section-order-badge">4</span>
+          <div>
+            <h3>Flat Config</h3>
+            <p>Configure flats following the Society → Wing → Floor → Flat hierarchy.</p>
+          </div>
+        </div>
+        <button type="button" class="accordion-toggle-btn" [attr.aria-label]="openSections.flat ? 'Collapse Flat Config' : 'Expand Flat Config'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="openSections.flat" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      </header>
+
+      @if (openSections.flat) {
+      <div class="section-body">
+        <div class="flat-form-grid">
+          <div class="field">
+            <label class="ui-label" for="flatWingSelect">Select Wing <span class="required" aria-hidden="true">*</span></label>
+            <select id="flatWingSelect" class="ui-select" [ngModel]="flatForm.wingId" (ngModelChange)="onFlatWingChange($event)" [class.input-error]="flatFormErrors['wingId']">
+              <option [ngValue]="null">Choose a Wing...</option>
+              @for (w of displayWings; track w.id) {
+              <option [ngValue]="w.id">{{ w.name }} ({{ w.code }})</option>
+              }
+            </select>
+            @if (flatFormErrors['wingId']) { <small class="field-error">{{ flatFormErrors['wingId'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="flatFloorSelect">Select Floor <span class="required" aria-hidden="true">*</span></label>
+            <select id="flatFloorSelect" class="ui-select" [(ngModel)]="flatForm.floorId" [disabled]="!flatForm.wingId" [class.input-error]="flatFormErrors['floorId']">
+              <option [ngValue]="null">{{ flatForm.wingId ? 'Choose a Floor...' : 'Select a wing first' }}</option>
+              @for (f of getFloorsForSelectedFlatWing(); track f.id) {
+              <option [ngValue]="f.id">{{ f.name }} (Level {{ f.floorNumber }})</option>
+              }
+            </select>
+            @if (flatFormErrors['floorId']) { <small class="field-error">{{ flatFormErrors['floorId'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="flatNumberInput">Flat Number <span class="required" aria-hidden="true">*</span></label>
+            <input id="flatNumberInput" class="ui-input" type="text" [(ngModel)]="flatForm.flatNumber" placeholder="e.g. 101" [class.input-error]="flatFormErrors['flatNumber']" />
+            @if (flatFormErrors['flatNumber']) { <small class="field-error">{{ flatFormErrors['flatNumber'] }}</small> }
+          </div>
+
+          <div class="field">
+            <label class="ui-label" for="flatTypeInput">Flat Type / Category</label>
+            <input id="flatTypeInput" class="ui-input" type="text" [(ngModel)]="flatForm.flatType" placeholder="e.g. 2BHK, 3BHK" />
+          </div>
+        </div>
+
+        <div class="form-actions-row">
+          <button type="button" class="ui-btn ui-btn-primary" [disabled]="savingFlat" (click)="addFlat()">
+            {{ savingFlat ? 'Adding Flat...' : 'Add Flat' }}
+          </button>
+        </div>
+
+        <!-- Existing Flats Hierarchical Tree/List -->
+        <div class="grouped-data-wrapper">
+          <div class="sub-table-header">
+            <h4>Existing Flats (Grouped by Wing & Floor)</h4>
+          </div>
+
+          @if (!structure()?.wings || structure()!.wings.length === 0) {
+          <div class="ui-empty empty-state-table">
+            <p>No wings configured yet. Add wings and floors to configure flats.</p>
+          </div>
+          } @else {
+          <div class="groups-grid">
+            @for (w of structure()!.wings; track w.wing.id) {
+            <div class="grouped-card ui-card">
+              <div class="grouped-card-head">
+                <div class="group-title-row">
+                  <span class="group-indicator-wing" aria-hidden="true">W</span>
+                  <strong>{{ w.wing.name }}</strong>
+                </div>
+              </div>
+
+              @if (w.floors.length === 0) {
+              <p class="muted-empty-hint">No floors configured for this wing.</p>
+              } @else {
+              <div class="subgroups-container">
+                @for (f of w.floors; track f.floor.id) {
+                <div class="subgroup-box">
+                  <div class="subgroup-title-row">
+                    <span class="subgroup-floor-name">{{ f.floor.name }}</span>
+                    <span class="subgroup-level">Level {{ f.floor.floorNumber }}</span>
+                  </div>
+
+                  @if (f.flats.length === 0) {
+                  <p class="muted-empty-hint">No flats added on this floor yet.</p>
+                  } @else {
+                  <div class="flat-pills-wrap">
+                    @for (fl of f.flats; track fl.id) {
+                    <div class="flat-pill-item">
+                      <span class="flat-pill-code">Flat {{ fl.code }}</span>
+                      @if (fl.typeName) {
+                      <span class="flat-pill-tag">{{ fl.typeName }}</span>
+                      }
+                      <button type="button" class="pill-remove-btn" (click)="deactivateFlat(w.wing.id, f.floor.id, fl.id)" [attr.aria-label]="'Remove flat ' + fl.code">×</button>
+                    </div>
+                    }
+                  </div>
                   }
                 </div>
-                <button type="button" class="ui-btn ui-btn-ghost ui-btn-danger-text"
-                  (click)="deactivateFlat(wingNode.wing.id, floorNode.floor.id, flat.id)">Remove</button>
-              </li>
+                }
+              </div>
               }
-            </ul>
-          </div>
-          }
-          }
-        </article>
-        }
-      </div>
-      }
-    </section>
-
-    <section class="panel add-panel ui-card">
-      <div class="panel-header">
-        <div class="panel-title-wrap">
-          <span class="panel-icon panel-icon-add" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </span>
-          <div>
-            <h3>Add to structure</h3>
-            <p>Select wing, floor, and flat from the catalog</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="step-track" aria-label="Configuration steps">
-        <div class="step-item" [class.done]="!!selectedWingId" [class.active]="!selectedWingId">
-          <span class="step-num">1</span>
-          <span>Wing</span>
-        </div>
-        <div class="step-line" [class.done]="!!selectedWingId"></div>
-        <div class="step-item" [class.done]="!!selectedFloorId" [class.active]="!!selectedWingId && !selectedFloorId">
-          <span class="step-num">2</span>
-          <span>Floor</span>
-        </div>
-        <div class="step-line" [class.done]="!!selectedFloorId"></div>
-        <div class="step-item" [class.active]="!!selectedFloorId && selectedFlatIds.size === 0" [class.done]="selectedFlatIds.size > 0">
-          <span class="step-num">3</span>
-          <span>Flat{{ selectedFlatIds.size > 1 ? 's' : '' }}{{ selectedFlatIds.size > 0 ? ' (' + selectedFlatIds.size + ')' : '' }}</span>
-        </div>
-      </div>
-
-      <div class="form-block">
-        <label class="ui-label" for="wingSelect">Select wing</label>
-        <select id="wingSelect" class="ui-select" [ngModel]="selectedWingId" (ngModelChange)="onWingSelected($event)">
-          <option [ngValue]="null">Choose a wing...</option>
-          @for (wing of masterWings(); track wing.id) {
-          <option [ngValue]="wing.id">{{ wingLabel(wing) }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="form-block" [class.form-block-disabled]="!selectedWingId">
-        <label class="ui-label" for="floorSelect">Select floor</label>
-        <select id="floorSelect" class="ui-select" [ngModel]="selectedFloorId"
-          (ngModelChange)="selectFloorContext($event)" [disabled]="!selectedWingId">
-          <option [ngValue]="null">{{ selectedWingId ? 'Choose a floor...' : 'Select a wing first' }}</option>
-          @for (floor of masterFloors(); track floor.id) {
-          <option [ngValue]="floor.id">{{ floorLabel(floor) }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="form-block" [class.form-block-disabled]="!selectedFloorId">
-        <div class="flat-picker-header">
-          <label class="ui-label">Select flats
-            @if (selectedFlatIds.size > 0) {
-            <span class="flat-count-badge">{{ selectedFlatIds.size }} selected</span>
-            }
-          </label>
-          <p class="hint">Each flat can only be used once per wing.</p>
-        </div>
-
-        @if (selectedFloorId) {
-        <!-- Search inside flat list -->
-        <div class="flat-search-wrap">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flat-search-icon" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input
-            class="flat-search-input"
-            type="search"
-            [(ngModel)]="flatSearchTerm"
-            placeholder="Filter flats..."
-            aria-label="Filter available flats"
-          />
-          @if (flatSearchTerm) {
-          <button type="button" class="flat-search-clear" aria-label="Clear" (click)="flatSearchTerm=''">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-          }
-        </div>
-
-        <!-- Select-all row -->
-        @if (filteredFlatsForPicker().length > 0) {
-        <div class="flat-select-all-row">
-          <label class="flat-checkbox-row flat-select-all">
-            <input
-              type="checkbox"
-              class="flat-checkbox"
-              [checked]="allFilteredFlatsSelected"
-              [indeterminate]="someFilteredFlatsSelected"
-              (change)="selectAllFlats($any($event.target).checked)"
-              id="selectAllFlats"
-            />
-            <span class="flat-checkbox-label">
-              {{ allFilteredFlatsSelected ? 'Deselect all' : 'Select all' }}
-              <span class="flat-count-muted">({{ filteredFlatsForPicker().length }})</span>
-            </span>
-          </label>
-        </div>
-        }
-
-        <!-- Flat list -->
-        <div class="flat-picker-list" role="listbox" aria-multiselectable="true" aria-label="Available flats">
-          @if (filteredFlatsForPicker().length === 0) {
-          <div class="flat-picker-empty">
-            @if (availableFlatsForMapping().length === 0) {
-              <span>All flats already added for this wing.</span>
-            } @else {
-              <span>No flats match "{{ flatSearchTerm }}".</span>
+            </div>
             }
           </div>
           }
-          @for (flat of filteredFlatsForPicker(); track flat.id) {
-          <label
-            class="flat-checkbox-row"
-            [class.is-checked]="selectedFlatIds.has(flat.id)"
-            role="option"
-            [attr.aria-selected]="selectedFlatIds.has(flat.id)"
-          >
-            <input
-              type="checkbox"
-              class="flat-checkbox"
-              [checked]="selectedFlatIds.has(flat.id)"
-              (change)="toggleFlatId(flat.id)"
-              [attr.aria-label]="'Select flat ' + flat.code"
-            />
-            <span class="flat-chip">
-              <span class="flat-chip-code">{{ flat.code }}</span>
-              @if (flat.typeName) {
-              <span class="flat-chip-type">{{ flat.typeName }}</span>
-              }
-            </span>
-          </label>
-          }
         </div>
-        } @else {
-        <div class="flat-picker-placeholder">Select a floor to see available flats.</div>
-        }
       </div>
-
-      <!-- Progress + Add button -->
-      @if (savingMapping) {
-      <div class="add-progress-bar">
-        <div class="add-progress-fill" [style.width.%]="addMappingTotal > 0 ? (addMappingProgress / addMappingTotal * 100) : 0"></div>
-      </div>
-      <p class="add-progress-label">Adding {{ addMappingProgress }} / {{ addMappingTotal }} flat(s)...</p>
       }
-
-      <button type="button" class="ui-btn ui-btn-primary ui-btn-block"
-        [disabled]="!selectedWingId || !selectedFloorId || selectedFlatIds.size === 0 || savingMapping"
-        (click)="addMappings()">
-        @if (savingMapping) {
-        <span class="btn-mini-spinner" aria-hidden="true"></span> Adding...
-        } @else if (selectedFlatIds.size > 1) {
-        Add {{ selectedFlatIds.size }} Flats
-        } @else if (selectedFlatIds.size === 1) {
-        Add Flat
-        } @else {
-        Add Flat
-        }
-      </button>
-    </section>
+    </article>
   </div>
   }
-  }
 
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- CREATE / EDIT SOCIETY MODAL                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   @if (showSocietyModal) {
   <div class="modal-backdrop" role="presentation" (click)="showSocietyModal = false; resetSocietyForm();">
     <div class="modal modal-society ui-card" role="dialog" aria-modal="true"
@@ -426,7 +625,7 @@
       <div class="modal-head">
         <div class="modal-head-content">
           <h3 [id]="editingSociety ? 'editSocietyTitle' : 'createSocietyTitle'">
-            {{ editingSociety ? 'Edit Account' : 'Create Account' }}
+            {{ editingSociety ? 'Edit Society' : 'Create Society' }}
           </h3>
           <p>Add society and primary contact details.</p>
         </div>
@@ -532,12 +731,11 @@
 
       <div class="modal-actions">
         <button type="button" class="ui-btn ui-btn-secondary" (click)="showSocietyModal = false; resetSocietyForm();">Cancel</button>
-        <button type="button" class="ui-btn ui-btn-success" [disabled]="savingSociety" (click)="saveSociety()">
+        <button type="button" class="ui-btn ui-btn-primary" [disabled]="savingSociety" (click)="saveSociety()">
           {{ savingSociety ? 'Creating...' : (editingSociety ? 'Update Society' : 'Create Society') }}
         </button>
       </div>
     </div>
   </div>
   }
-
 </div>
