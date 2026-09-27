@@ -51,10 +51,9 @@
         <thead>
           <tr>
             <th scope="col">Society</th>
-            <th scope="col">Location</th>
-            <th scope="col">Wings</th>
-            <th scope="col">Floors</th>
-            <th scope="col">Flats</th>
+            <th scope="col">Code</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
             <th scope="col">Status</th>
             <th scope="col">Actions</th>
           </tr>
@@ -62,7 +61,7 @@
         <tbody>
           @if (societies().length === 0) {
           <tr>
-            <td colspan="7">
+            <td colspan="6">
               <div class="ui-empty empty-state-table">
                 <div class="ui-empty-icon" aria-hidden="true">🏢</div>
                 <h4>No societies yet</h4>
@@ -80,17 +79,15 @@
                 <span class="society-avatar" aria-hidden="true">{{ society.name.charAt(0) }}</span>
                 <div>
                   <strong>{{ society.name }}</strong>
-                  <span class="subtext">{{ society.code }}</span>
                 </div>
               </div>
             </td>
-            <td class="muted-cell" data-label="Location">{{ society.location || '—' }}</td>
-            <td data-label="Wings"><span class="metric-pill">{{ society.wingCount }}</span></td>
-            <td data-label="Floors"><span class="metric-pill">{{ society.floorCount }}</span></td>
-            <td data-label="Flats"><span class="metric-pill">{{ society.flatCount }}</span></td>
+            <td data-label="Code"><span class="code-pill">{{ society.code || '—' }}</span></td>
+            <td data-label="Email" class="muted-cell">{{ society.email || '—' }}</td>
+            <td data-label="Phone" class="muted-cell">{{ society.phone || '—' }}</td>
             <td data-label="Status">
               <span class="status-badge" [class.is-active]="society.isConfigured">
-                {{ society.isConfigured ? 'Configured' : 'Draft' }}
+                {{ society.isConfigured ? 'Active' : 'Inactive' }}
               </span>
             </td>
             <td class="actions-cell" data-label="Actions">
@@ -150,13 +147,6 @@
           </svg>
           Add Society Admin
         </button>
-        <button type="button" class="ui-btn ui-btn-primary" (click)="openGenerateModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            aria-hidden="true">
-            <path d="M12 3v18M3 12h18" />
-          </svg>
-          Generate Structure
-        </button>
       </div>
     </div>
   </section>
@@ -196,8 +186,7 @@
       <div class="ui-empty">
         <div class="ui-empty-icon" aria-hidden="true">📋</div>
         <h4>No structure configured</h4>
-        <p>This society does not have any wings configured yet. Add a wing manually or generate the full structure.</p>
-        <button type="button" class="ui-btn ui-btn-primary" (click)="openGenerateModal()">Generate Structure</button>
+        <p>This society does not have any wings configured yet. Add a wing manually using the structure controls.</p>
       </div>
       } @else {
       <div class="tree" role="tree" aria-label="Society structure">
@@ -430,162 +419,125 @@
   }
 
   @if (showSocietyModal) {
-  <div class="modal-backdrop" role="presentation" (click)="showSocietyModal = false">
-    <div class="modal ui-card" role="dialog" aria-modal="true"
+  <div class="modal-backdrop" role="presentation" (click)="showSocietyModal = false; resetSocietyForm();">
+    <div class="modal modal-society ui-card" role="dialog" aria-modal="true"
       [attr.aria-labelledby]="editingSociety ? 'editSocietyTitle' : 'createSocietyTitle'"
       (click)="$event.stopPropagation()">
       <div class="modal-head">
-        <h3 [id]="editingSociety ? 'editSocietyTitle' : 'createSocietyTitle'">{{ editingSociety ? 'Edit Society' :
-          'Create Society' }}</h3>
-        <p>Enter the society name and location.</p>
+        <div class="modal-head-content">
+          <h3 [id]="editingSociety ? 'editSocietyTitle' : 'createSocietyTitle'">
+            {{ editingSociety ? 'Edit Account' : 'Create Account' }}
+          </h3>
+          <p>Add society and primary contact details.</p>
+        </div>
+        <button type="button" class="modal-close-btn" (click)="showSocietyModal = false; resetSocietyForm();" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
-      <div class="field">
-        <label class="ui-label" for="societyName">Society name <span class="required"
-            aria-hidden="true">*</span></label>
-        <input id="societyName" class="ui-input" type="text" [(ngModel)]="societyForm.name"
-          placeholder="e.g. Golden Park Society" required />
+
+      <div class="modal-body-scroll">
+        <!-- SECTION 1: Society Information -->
+        <section class="modal-section society-info-section">
+          <div class="section-header">
+            <h4>Society Information</h4>
+          </div>
+
+          <div class="society-fields-row">
+            <div class="field">
+              <label class="ui-label" for="societyName">Society Name <span class="required" aria-hidden="true">*</span></label>
+              <input id="societyName" class="ui-input" type="text" [(ngModel)]="societyForm.socName" placeholder="e.g. ABC Society" [class.input-error]="formErrors['socName']" />
+              @if (formErrors['socName']) {
+                <small class="field-error">{{ formErrors['socName'] }}</small>
+              }
+            </div>
+
+            <div class="field">
+              <label class="ui-label" for="societyEmail">Email <span class="required" aria-hidden="true">*</span></label>
+              <input id="societyEmail" class="ui-input" type="email" [(ngModel)]="societyForm.email" placeholder="abc@gmail.com" [class.input-error]="formErrors['email']" />
+              @if (formErrors['email']) {
+                <small class="field-error">{{ formErrors['email'] }}</small>
+              }
+            </div>
+
+            <div class="field">
+              <label class="ui-label" for="societyPhone">Phone <span class="required" aria-hidden="true">*</span></label>
+              <input id="societyPhone" class="ui-input" type="tel" [(ngModel)]="societyForm.phone" placeholder="9876543210" [class.input-error]="formErrors['phone']" />
+              @if (formErrors['phone']) {
+                <small class="field-error">{{ formErrors['phone'] }}</small>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: SPC Details -->
+        <section class="modal-section spc-section">
+          <div class="spc-section-header">
+            <div class="spc-section-title-wrap">
+              <h4>SPC Details</h4>
+            </div>
+            <button type="button" class="ui-btn ui-btn-secondary add-spc-btn" (click)="addSpc()">
+              <span aria-hidden="true">+</span> Add SPC
+            </button>
+          </div>
+
+          @if (formErrors['spcGeneral']) {
+            <small class="field-error spc-general-error">{{ formErrors['spcGeneral'] }}</small>
+          }
+
+          <div class="spc-list">
+            @for (spc of societyForm.spcs; track $index; let i = $index) {
+              <div class="spc-card">
+                <div class="spc-card-header">
+                  <span class="spc-title">SPC {{ i + 1 }}</span>
+                  @if (societyForm.spcs.length > 1) {
+                    <button type="button" class="spc-remove-btn" (click)="removeSpc(i)" [attr.aria-label]="'Remove SPC ' + (i + 1)">
+                      Remove
+                    </button>
+                  }
+                </div>
+
+                <div class="spc-fields-row">
+                  <div class="field">
+                    <label class="ui-label" [for]="'spcName_' + i">Name <span class="required" aria-hidden="true">*</span></label>
+                    <input [id]="'spcName_' + i" class="ui-input" type="text" [(ngModel)]="spc.name" placeholder="Contact person name" [class.input-error]="formErrors['spc_' + i + '_name']" />
+                    @if (formErrors['spc_' + i + '_name']) {
+                      <small class="field-error">{{ formErrors['spc_' + i + '_name'] }}</small>
+                    }
+                  </div>
+
+                  <div class="field">
+                    <label class="ui-label" [for]="'spcDesignation_' + i">Designation <span class="required" aria-hidden="true">*</span></label>
+                    <input [id]="'spcDesignation_' + i" class="ui-input" type="text" [(ngModel)]="spc.designation" placeholder="e.g. Secretary" [class.input-error]="formErrors['spc_' + i + '_designation']" />
+                    @if (formErrors['spc_' + i + '_designation']) {
+                      <small class="field-error">{{ formErrors['spc_' + i + '_designation'] }}</small>
+                    }
+                  </div>
+
+                  <div class="field">
+                    <label class="ui-label" [for]="'spcContact_' + i">Contact <span class="required" aria-hidden="true">*</span></label>
+                    <input [id]="'spcContact_' + i" class="ui-input" type="tel" [(ngModel)]="spc.contact" placeholder="e.g. 9876543211" [class.input-error]="formErrors['spc_' + i + '_contact']" />
+                    @if (formErrors['spc_' + i + '_contact']) {
+                      <small class="field-error">{{ formErrors['spc_' + i + '_contact'] }}</small>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
       </div>
-      <div class="field">
-        <label class="ui-label" for="societyLocation">Location</label>
-        <input id="societyLocation" class="ui-input" type="text" [(ngModel)]="societyForm.location"
-          placeholder="City, state" />
-      </div>
+
       <div class="modal-actions">
-        <button type="button" class="ui-btn ui-btn-secondary" (click)="showSocietyModal = false">Cancel</button>
-        <button type="button" class="ui-btn ui-btn-primary" [disabled]="savingSociety" (click)="saveSociety()">
-          {{ savingSociety ? 'Saving...' : (editingSociety ? 'Update Society' : 'Create Society') }}
+        <button type="button" class="ui-btn ui-btn-secondary" (click)="showSocietyModal = false; resetSocietyForm();">Cancel</button>
+        <button type="button" class="ui-btn ui-btn-success" [disabled]="savingSociety" (click)="saveSociety()">
+          {{ savingSociety ? 'Creating...' : (editingSociety ? 'Update Society' : 'Create Society') }}
         </button>
       </div>
     </div>
   </div>
   }
 
-  @if (showGenerateModal) {
-  <div class="modal-backdrop" role="presentation" (click)="closeGenerateModal()">
-    <div class="modal modal-xl ui-card" role="dialog" aria-modal="true" aria-labelledby="generateStructureTitle"
-      (click)="$event.stopPropagation()">
-      <div class="modal-head">
-        <h3 id="generateStructureTitle">Generate Society Structure</h3>
-        <p>Step {{ generateStep }} of 4 — {{ generateSteps[generateStep - 1] }}</p>
-      </div>
-
-      <div class="wizard-steps" aria-hidden="true">
-        @for (step of generateSteps; track step; let i = $index) {
-        <span class="wizard-step" [class.active]="generateStep === i + 1" [class.done]="generateStep > i + 1">{{ i + 1
-          }}</span>
-        }
-      </div>
-
-      @if (generateStep === 1) {
-      <div class="generate-section">
-        <div class="generate-section-head">
-          <h4>Select wings</h4>
-          <label class="select-all">
-            <input type="checkbox" [checked]="generateWingIds.size === masterWings().length"
-              (change)="selectAllGenerate('wings', $any($event.target).checked)" />
-            Select all
-          </label>
-        </div>
-        <div class="checkbox-list">
-          @for (wing of masterWings(); track wing.id) {
-          <label class="checkbox-item">
-            <input type="checkbox" [checked]="generateWingIds.has(wing.id)"
-              (change)="toggleGenerateId(generateWingIds, wing.id, $any($event.target).checked)" />
-            <span>{{ wingLabel(wing) }}</span>
-          </label>
-          }
-        </div>
-      </div>
-      }
-
-      @if (generateStep === 2) {
-      <div class="generate-section">
-        <div class="generate-section-head">
-          <h4>Select floors</h4>
-          <label class="select-all">
-            <input type="checkbox"
-              [checked]="generateFloorIds.size === filteredFloorsForGenerate().length && filteredFloorsForGenerate().length > 0"
-              (change)="selectAllGenerate('floors', $any($event.target).checked)" />
-            Select all
-          </label>
-        </div>
-        <div class="checkbox-list">
-          @for (floor of filteredFloorsForGenerate(); track floor.id) {
-          <label class="checkbox-item">
-            <input type="checkbox" [checked]="generateFloorIds.has(floor.id)"
-              (change)="toggleGenerateId(generateFloorIds, floor.id, $any($event.target).checked)" />
-            <span>{{ floorLabel(floor) }}</span>
-          </label>
-          }
-        </div>
-      </div>
-      }
-
-      @if (generateStep === 3) {
-      <div class="generate-section">
-        <div class="generate-section-head">
-          <h4>Select flats</h4>
-          <label class="select-all">
-            <input type="checkbox" [checked]="generateFlatIds.size === masterFlats().length"
-              (change)="selectAllGenerate('flats', $any($event.target).checked)" />
-            Select all
-          </label>
-        </div>
-        <div class="checkbox-list checkbox-list-scroll">
-          @for (flat of masterFlats(); track flat.id) {
-          <label class="checkbox-item">
-            <input type="checkbox" [checked]="generateFlatIds.has(flat.id)"
-              (change)="toggleGenerateId(generateFlatIds, flat.id, $any($event.target).checked)" />
-            <span>{{ flatLabel(flat) }}</span>
-          </label>
-          }
-        </div>
-      </div>
-      }
-
-      @if (generateStep === 4 && preview(); as p) {
-      <div class="preview-panel">
-        <p class="preview-warning">You are about to configure <strong>{{ generateWingIds.size }}</strong> wing(s),
-          <strong>{{ generateFloorIds.size }}</strong> floor(s), and up to <strong>{{ p.totalMappings }}</strong> flat
-          configuration(s). Existing configurations will be preserved; duplicates will be skipped.</p>
-        <div class="preview-summary">
-          <strong>{{ p.totalMappings }}</strong> new flat(s)
-          <span class="preview-divider">·</span>
-          <span>{{ p.skippedDuplicates }} duplicate(s) skipped</span>
-        </div>
-        <div class="preview-tree">
-          @for (wingNode of p.preview; track wingNode.wing.id) {
-          <div class="preview-wing">{{ wingNode.wing.name }}</div>
-          @for (floorNode of wingNode.floors; track floorNode.floor.id) {
-          <div class="preview-floor">
-            <span>{{ floorNode.floor.name }}</span>
-            <div class="preview-flats">
-              @for (flat of floorNode.flats; track flat.id) {
-              <span class="preview-flat">{{ flat.code }}</span>
-              }
-            </div>
-          </div>
-          }
-          }
-        </div>
-      </div>
-      }
-
-      <div class="modal-actions">
-        <button type="button" class="ui-btn ui-btn-secondary" (click)="closeGenerateModal()">Cancel</button>
-        @if (generateStep > 1) {
-        <button type="button" class="ui-btn ui-btn-secondary" (click)="prevGenerateStep()">Back</button>
-        }
-        @if (generateStep < 4) { <button type="button" class="ui-btn ui-btn-primary" (click)="nextGenerateStep()">
-          Next</button>
-          } @else {
-          <button type="button" class="ui-btn ui-btn-primary" [disabled]="!preview() || generating"
-            (click)="confirmGenerate()">
-            {{ generating ? 'Generating...' : 'Generate Structure' }}
-          </button>
-          }
-      </div>
-    </div>
-  </div>
-  }
 </div>

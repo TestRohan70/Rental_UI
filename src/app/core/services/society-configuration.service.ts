@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface SocietySummary {
   id: number;
   code: string;
   name: string;
+  email?: string;
+  phone?: string;
   location?: string;
   wingCount: number;
   floorCount: number;
@@ -55,20 +57,34 @@ export interface FlatItem {
   isActive: boolean;
 }
 
-export interface GenerateStructureRequest {
-  wingIds: number[];
-  floorIds: number[];
-  flatIds: number[];
-  previewOnly: boolean;
+export interface PmAccountSpcDtlItem {
+  Name: string;
+  Designation: string;
+  Contact: string;
 }
 
-export interface GenerateStructurePreview {
-  totalWings: number;
-  totalFloors: number;
-  totalFlats: number;
-  totalMappings: number;
-  skippedDuplicates: number;
-  preview: SocietyWingNode[];
+export type PmAccountSpcDtl = PmAccountSpcDtlItem[] | PmAccountSpcDtlItem;
+
+export interface PmAccount {
+  id?: number;
+  socName: string;
+  code?: string;
+  email: string;
+  phone: string;
+  isActive: boolean;
+  spcDtl?: PmAccountSpcDtlItem[] | PmAccountSpcDtlItem | any;
+  createdDate?: string;
+  createdBy?: string | number | null;
+  modifiedDate?: string;
+  modifiedBy?: string | number | null;
+}
+
+export interface PmAccountCreatePayload {
+  socName: string;
+  email: string;
+  phone: string;
+  isActive: boolean;
+  spcDtl: PmAccountSpcDtlItem[];
 }
 
 export interface CreateSocietyAdminRequest {
@@ -81,6 +97,28 @@ export interface CreateSocietyAdminRequest {
 export class SocietyConfigurationService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/padmin`;
+  private readonly pmAccountUrl = `${environment.apiUrl}/PmAccount`;
+
+  buildPmAccountPayload(input: {
+    socName: string;
+    email: string;
+    phone: string;
+    spcs: { name: string; designation: string; contact: string }[];
+  }): PmAccountCreatePayload {
+    const spcDtl: PmAccountSpcDtlItem[] = (input.spcs || []).map((s) => ({
+      Name: s.name ? s.name.trim() : '',
+      Designation: s.designation ? s.designation.trim() : '',
+      Contact: s.contact ? s.contact.trim() : ''
+    }));
+
+    return {
+      socName: input.socName.trim(),
+      email: input.email.trim(),
+      phone: input.phone.trim(),
+      isActive: true,
+      spcDtl
+    };
+  }
 
   getMasterWings(): Observable<WingItem[]> {
     return this.http.get<WingItem[]>(`${this.baseUrl}/masters/wings`);
@@ -103,23 +141,73 @@ export class SocietyConfigurationService {
     if (search?.trim()) {
       params = params.set('search', search.trim());
     }
-    return this.http.get<SocietySummary[]>(`${this.baseUrl}/societies`, { params });
+    return this.http.get<PmAccount[]>(this.pmAccountUrl, { params }).pipe(
+      // Map the PmAccount DTO to the page's existing SocietySummary shape.
+      // The UI still expects a name, code, email, phone, and status contract.
+      map((accounts) =>
+        (accounts || []).map((account: any) => ({
+          id: account.id ?? account.ID ?? 0,
+          code: account.code ?? account.Code ?? '',
+          name: account.socName ?? account.name ?? account.Name ?? '',
+          email: account.email ?? account.Email,
+          phone: account.phone ?? account.Phone,
+          location: undefined,
+          wingCount: 0,
+          floorCount: 0,
+          flatCount: 0,
+          isConfigured: account.isActive ?? account.IsActive ?? true
+        }))
+      )
+    );
   }
 
   getSociety(id: number): Observable<SocietySummary> {
-    return this.http.get<SocietySummary>(`${this.baseUrl}/societies/${id}`);
+    return this.http.get<PmAccount>(`${this.pmAccountUrl}/${id}`).pipe(
+      map((account: any) => ({
+        id: account.id ?? account.ID ?? id,
+        code: account.code ?? account.Code ?? '',
+        name: account.socName ?? account.name ?? account.Name ?? '',
+        email: account.email ?? account.Email,
+        phone: account.phone ?? account.Phone,
+        location: undefined,
+        wingCount: 0,
+        floorCount: 0,
+        flatCount: 0,
+        isConfigured: account.isActive ?? account.IsActive ?? true
+      }))
+    );
   }
 
-  createSociety(payload: { name: string; location?: string }): Observable<SocietySummary> {
-    return this.http.post<SocietySummary>(`${this.baseUrl}/societies`, payload);
+  getAll(): Observable<PmAccount[]> {
+    return this.http.get<PmAccount[]>(this.pmAccountUrl);
   }
 
-  updateSociety(id: number, payload: { name: string; location?: string }): Observable<SocietySummary> {
-    return this.http.put<SocietySummary>(`${this.baseUrl}/societies/${id}`, payload);
+  getById(id: number): Observable<PmAccount> {
+    return this.http.get<PmAccount>(`${this.pmAccountUrl}/${id}`);
+  }
+
+  create(payload: PmAccountCreatePayload): Observable<PmAccount> {
+    return this.http.post<PmAccount>(this.pmAccountUrl, payload);
+  }
+
+  createSociety(payload: PmAccountCreatePayload): Observable<PmAccount> {
+    return this.create(payload);
+  }
+
+  update(id: number, payload: PmAccountCreatePayload): Observable<PmAccount> {
+    return this.http.put<PmAccount>(`${this.pmAccountUrl}/${id}`, payload);
+  }
+
+  updateSociety(id: number, payload: PmAccountCreatePayload): Observable<PmAccount> {
+    return this.update(id, payload);
+  }
+
+  delete(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.pmAccountUrl}/${id}`);
   }
 
   deleteSociety(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.baseUrl}/societies/${id}`);
+    return this.delete(id);
   }
 
   getStructure(societyId: number): Observable<SocietyStructure> {
@@ -128,10 +216,6 @@ export class SocietyConfigurationService {
 
   addMapping(societyId: number, payload: { wingId: number; floorId: number; flatId: number }): Observable<FlatItem> {
     return this.http.post<FlatItem>(`${this.baseUrl}/societies/${societyId}/mappings`, payload);
-  }
-
-  generateStructure(societyId: number, payload: GenerateStructureRequest): Observable<GenerateStructurePreview> {
-    return this.http.post<GenerateStructurePreview>(`${this.baseUrl}/societies/${societyId}/generate-structure`, payload);
   }
 
   deactivateWing(societyId: number, wingId: number): Observable<{ message: string }> {
